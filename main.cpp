@@ -14,34 +14,39 @@ using namespace std;
 int main(){
     fstream fs;
     fs.open ("/dev/ttyACM0");
-    
+    bool newMsg; 
     if (fs.is_open())
     {
         cout << "Serial port successfully opened" << endl;
         //usleep(10*1000);
         char c;
         string myString;
-        myString << fs;
+        fs >> myString;
         c = myString[0];
-        if(c == MSG_YES){
-            cout << "Yes" << endl;
-            myString << fs;
-            cout << myString;
-        }
-        else if(c == MSG_NO){
-            cout << "NO";
-        }
-        else{
-            cout << "error"
-            fs.close();
-            return -1;
-        }
-        if(newMsg == true){
-            cout << "msg to send" << endl;
-            fs << "ADD5512S";
-        }
-        else{
-            cout << "no msg to send" << endl;
+        if(c == MSG_AVAILABLE)
+        {
+            fs >> myString;
+            c = myString[0];
+            if(c == MSG_YES){
+                cout << "Yes" << endl;
+                fs >> myString;
+                cout << myString << endl;
+            }
+            else if(c == MSG_NO){
+                cout << "NO";
+            }
+            else{
+                cout << "error" << endl;
+                fs.close();
+                return -1;
+            }
+            if(newMsg == true){
+                cout << "msg to send" << endl;
+                fs << "ADD5512S";
+            }
+            else{
+                cout << "no msg to send" << endl;
+            }
         }
 
 
