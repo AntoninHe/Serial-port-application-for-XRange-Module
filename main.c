@@ -1,3 +1,9 @@
+/* 
+ * author: Antonin Héréson
+ * Serial port courses from :
+ * https://en.wikibooks.org/wiki/Serial_Programming/termios
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
