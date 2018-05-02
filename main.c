@@ -28,20 +28,9 @@ struct termios *old_term;
     tcgetattr(fd, old_term);
 
     /* mode RAW */
-#if 0
-    term.c_iflag = IGNBRK;
-    term.c_lflag = 0;
-    term.c_oflag = 0;
-    term.c_cflag |= (CREAD | CRTSCTS);
-    term.c_cc[VMIN] = 1; /* 1 char is enough ! */
-    term.c_cc[VTIME] = 0;
-    term.c_iflag &= ~(IXON|IXOFF|IXANY);
-    term.c_cflag &= ~(PARENB | CSIZE);
-#endif
-    // Plus simple ! 
     cfmakeraw (&term);
     
-    if(cfsetspeed(&term, B57600) != 0 )// 115200 baud
+    if(cfsetspeed(&term, B57600) != 0 )
         printf("Error set speed\n");
 
     if(tcsetattr(fd, TCSANOW, &term) != 0)
@@ -51,21 +40,18 @@ struct termios *old_term;
 int readMsg(int fd, char *buffer){
     int i=0;
     char c;
-    //while(read(fd, &c, 1) < 1); // read the space
-    // printf("space read %c",c);
     c=0;
     while( c!= ' '){ 
         while(read(fd, &c, 1) < 1); // read the message
         buffer[i] = c; 
         i++;
-        //printf("bcl :%c ",c);// DEBUG
         if(i + 2 > BUFFER_SIZE){
             printf("error read msg");
             break;
         }
     }
     buffer[ i++ ] = '\0'; // DEBUG
-    printf("\n\ng%s \n", buffer);
+    printf("\n\n%s \n", buffer);
     return i;
 }
 
@@ -81,24 +67,18 @@ int say_Y_N(int fd, bool new_msg){
         printf("error");
         return -1;
     }
-    /*
-    r = ' ';
-    if ( write(fd, &r, 1)  != 1){
-        printf("error");
-        return -1; 
-    }*/
     return 0;
 }
 
-int flushWithSpace(int fd){
-    // TO DO add Flush
-    char buffer[10]={' ',' ',' ',' ',' ',' ',' ',' ',' ',' '};
 
-    if (write(fd, buffer, 10) > 0){ // write YES
+int flushWithSpace(int fd){
+    char c = ' ';
+    if (write(fd, &c, 1) > 0){ 
         return 0;
     }
     return -1;
 }
+
 
 int main(int argc,char** argv)
 {
@@ -108,14 +88,14 @@ int main(int argc,char** argv)
         
 	struct termios old;
         int i;
-        char buffer[BUFFER_SIZE];
+        char buffer[BUFFER_SIZE]={'5'};
 
         char c='D';
         bool new_msg = true;
 
         char bufferW[10]={'1','2','3','4','5','6','7','8','9',' '};
 
-        tty_fd = open(argv[1], O_RDWR );//| O_NONBLOCK);        // O_NONBLOCK might override VMIN and VTIME, so read() may return immediately.
+        tty_fd = open(argv[1], O_RDWR );
 
         if(tty_fd == -1)
             return -1;
@@ -125,30 +105,30 @@ int main(int argc,char** argv)
         printf("Pass to raw mode\n");
 
         tcflush(tty_fd, TCIFLUSH);
+        flushWithSpace(tty_fd);
+        usleep(100);
         printf("Flush\n");
 
         while (c!='q')
         {
                 if (read(tty_fd,&c,1) > 0 && (c == MSG_YES || c == MSG_NO )){
-                    //printf("Caractère détecté %d %c \n",c);
 
                     if(c == MSG_YES || c == MSG_NO){
                         say_Y_N(tty_fd, new_msg);
-                        //printf("responded to the device\n");
                         if(c == MSG_YES)
                         {
                             memset(&buffer, 0, sizeof(char) * BUFFER_SIZE); 
                             readMsg(tty_fd, buffer);
-                            printf("MSG Yes received\n");
+                            printf("MSG Yes received\n"); // DEBUG
                         }
                         else //MSG_NO 
                         {
-                            printf("MSG NO received\n");    
+                            printf("MSG NO received\n"); // DEBUG   
                         }
                         if( new_msg == true){
                             
                             if (write(tty_fd, bufferW, 10) == 10){ // write YES
-                                printf("Msg Send\n");
+                                printf("Msg Send\n"); // DEBUG
                             }
                             else{
                                 printf("fail send\n");
@@ -158,7 +138,6 @@ int main(int argc,char** argv)
                     }
                     else{
                         printf("yes nor no\n");
-                        //flushWithSpace(tty_fd);
                     }
 
                 tcsetattr(tty_fd, TCSANOW, &old);
