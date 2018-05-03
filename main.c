@@ -22,7 +22,6 @@ int fd;
 struct termios *old_term;
 {
     struct termios term;
-    register int i;
 
     tcgetattr(fd, &term);
     tcgetattr(fd, old_term);
@@ -46,12 +45,12 @@ int readMsg(int fd, char *buffer){
         buffer[i] = c; 
         i++;
         if(i + 2 > BUFFER_SIZE){
-            printf("error read msg");
+            printf("error read msg overflow");
             break;
         }
     }
     buffer[ i++ ] = '\0'; // DEBUG
-    printf("\n\n%s \n", buffer);
+    printf("\n\n%s \n", buffer);// DEBUG
     return i;
 }
 
@@ -82,12 +81,9 @@ int flushWithSpace(int fd){
 
 int main(int argc,char** argv)
 {
-        struct termios stdio;
         int tty_fd;
-        fd_set rdset;
         
 	struct termios old;
-        int i;
         char buffer[BUFFER_SIZE]={'5'};
 
         char c='D';
