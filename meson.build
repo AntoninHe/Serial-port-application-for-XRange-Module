@@ -1,2 +1,2 @@
-project('tutorial', 'c')
-shared_library( 'serialLoRa', 'main.c')
+project('Serial Lora Lib', 'c')
+shared_library( 'SerialLoRa', 'serialLoRa.c')

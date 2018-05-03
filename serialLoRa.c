@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <string.h> // needed for memset
+#include <string.h> 
 #include <stdbool.h>
 
 #define MSG_YES '!'
@@ -36,7 +36,7 @@ struct termios *old_term;
         printf("Error set attr\n");
 }
 
-int readMsg(int fd, char *buffer){
+int readMsg(int fd, char *buffer, int size){
     int i=0;
     char c;
     c=0;
@@ -44,7 +44,7 @@ int readMsg(int fd, char *buffer){
         while(read(fd, &c, 1) < 1); // read the message
         buffer[i] = c; 
         i++;
-        if(i + 2 > BUFFER_SIZE){
+        if(i + 2 > size){
             printf("error read msg overflow");
             break;
         }
@@ -69,7 +69,6 @@ int say_Y_N(int fd, bool new_msg){
     return 0;
 }
 
-
 int flushWithSpace(int fd){
     char c = ' ';
     if (write(fd, &c, 1) > 0){ 
@@ -78,20 +77,17 @@ int flushWithSpace(int fd){
     return -1;
 }
 
+int serialExchange(char *port, char *dataIN, size_t sizeDataIN, char *dataOUT, size_t sizeDataOUT){
 
-int main(int argc,char** argv)
-{
         int tty_fd;
         
 	struct termios old;
-        char buffer[BUFFER_SIZE]={'5'};
+        //char buffer[BUFFER_SIZE]={'5'};
 
         char c='D';
         bool new_msg = true;
 
-        char bufferW[10]={'1','2','3','4','5','6','7','8','9',' '};
-
-        tty_fd = open(argv[1], O_RDWR );
+        tty_fd = open(port, O_RDWR );
 
         if(tty_fd == -1)
             return -1;
@@ -113,8 +109,8 @@ int main(int argc,char** argv)
                         say_Y_N(tty_fd, new_msg);
                         if(c == MSG_YES)
                         {
-                            memset(&buffer, 0, sizeof(char) * BUFFER_SIZE); 
-                            readMsg(tty_fd, buffer);
+                            memset(&dataOUT, 0, sizeof(char) * sizeDataOUT); 
+                            readMsg(tty_fd, dataOUT, sizeDataOUT);
                             printf("MSG Yes received\n"); // DEBUG
                         }
                         else //MSG_NO 
@@ -123,21 +119,21 @@ int main(int argc,char** argv)
                         }
                         if( new_msg == true){
                             
-                            if (write(tty_fd, bufferW, 10) == 10){ // write YES
+                            if (write(tty_fd, dataIN, sizeDataIN) == sizeDataIN){ // write YES
                                 printf("Msg Send\n"); // DEBUG
                             }
                             else{
-                                printf("fail send\n");
+                                printf("Fail send\n");
                             }
-                        }
 
+                        }
                     }
                     else{
                         printf("yes nor no\n");
                     }
-
                 tcsetattr(tty_fd, TCSANOW, &old);
                 }
         }
         close(tty_fd);
+        return 0;
 }
