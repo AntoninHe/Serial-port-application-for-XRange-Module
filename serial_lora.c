@@ -92,7 +92,7 @@ int exchange(const int fd, const char *data_in, const size_t size_data_in, char 
             if(c == MSG_YES)
             {
                 memset(&data_out, 0, sizeof(char) * size_data_out); 
-                size = readMsg(fd, data_out, size_data_out);
+                size = readMsg(fd, data_in, size_data_in);
                 printf("MSG Yes received\n"); // DEBUG
             }
             else //MSG_NO 
@@ -102,7 +102,7 @@ int exchange(const int fd, const char *data_in, const size_t size_data_in, char 
             }
             if( new_msg == true){
                     
-                if (write(fd, data_in, size_data_in) == size_data_in){ // write YES
+                if (write(fd, data_out, size_data_out) == size_data_out){ // write YES
                     printf("Msg Send\n"); // DEBUG
                     return size;
                 }
@@ -153,7 +153,7 @@ int close_port(const char p_port[], struct termios *p_old, int fd){
 
 // ------------------------------------------------------------------------- //
 
-/*
+
 int serialExchange(char *port, char *data_in, size_t size_data_in, char *data_out, size_t size_data_out){
 
         int tty_fd;
@@ -162,7 +162,9 @@ int serialExchange(char *port, char *data_in, size_t size_data_in, char *data_ou
         //char buffer[BUFFER_SIZE]={'5'};
 
         char c='D';
-        bool new_msg = true;
+        bool new_msg = false;
+
+        printf("try open port\n");
 
         tty_fd = open(port, O_RDWR );
 
@@ -214,4 +216,4 @@ int serialExchange(char *port, char *data_in, size_t size_data_in, char *data_ou
         close(tty_fd);
         return 0;
 }
-*/
+

@@ -10,6 +10,9 @@
 
 #include <unistd.h>
 #include <termios.h>
+#include <stdbool.h>
+
+int serialExchange(char *port, char *data_in, size_t size_data_in, char *data_out, size_t size_data_out);//debug
 
 /*
  * Name : exchange

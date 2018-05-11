@@ -9,6 +9,8 @@ int main (int argc, char *argv[]){
     std::cout << port_name << std::endl;
         
     SerialLora my_LoRa(port_name);
-    my_LoRa.serial_thread();
+    //while(1){
+        my_LoRa.serial_thread();
+    //}
     return 0;
 }
