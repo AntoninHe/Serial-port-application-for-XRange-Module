@@ -1,6 +1,7 @@
 #include "SerialLora.hpp"
 
 int main (int argc, char *argv[]){
+
     if(argc < 2)
         return -1;
 
@@ -9,8 +10,7 @@ int main (int argc, char *argv[]){
     std::cout << port_name << std::endl;
         
     SerialLora my_LoRa(port_name);
-    //while(1){
-        my_LoRa.serial_thread();
-    //}
+    my_LoRa.serial_thread();
+
     return 0;
 }

@@ -1,12 +1,10 @@
-project('Serial Lora Lib', 'c', 'cpp')
+project('Serial Lora Lib', 'cpp')
 
-source = [
+sources = [
     'main.cpp',
-    'SerialLora.cpp'
+    'serial_lora.cpp',
+    'SerialLora.cpp' 
 ]
 
-lib = shared_library( 'SerialLoRa', 'serial_lora.c')
 
-executable('program_test_cpp', source, link_with : lib)
-
-executable('program_test_c', 'main.c', link_with : lib)
+executable('program_test_cpp', sources, link_args : '-pthread')
