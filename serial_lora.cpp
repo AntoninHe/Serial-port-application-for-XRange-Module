@@ -15,6 +15,8 @@
 
 #include <mutex>
 #include <list>
+#include <iostream>
+
 
 #define MSG_YES '!'
 #define MSG_NO '?'
@@ -45,10 +47,11 @@ int readMsg(int fd, char *buffer, size_t buffer_size){
     char c=0;
     char r=MSG_NO;
 
+    myMutex.lock();
     while( c!= ' '){ 
         while(read(fd, &c, 1) < 1); // read the message
  
-        printf("\n%d %c\n", i, c);// DEBUG
+    //    printf("\n%d %c\n", i, c);// DEBUG
         buffer[i] = c; 
         i++;
         if(i + 2 > BUFFER_SIZE){
@@ -57,7 +60,11 @@ int readMsg(int fd, char *buffer, size_t buffer_size){
         }
     }
     buffer[ i++ ] = '\0'; // DEBUG
-    printf("\n\n%s \n", buffer);// DEBUG
+    std::string mystring(buffer);
+    myList.push_back(mystring);
+    std::cout << mystring << std::endl;
+    myMutex.unlock();
+   // printf("\n\n%s \n", buffer);// DEBUG
     return i;
 }
 
@@ -108,9 +115,6 @@ int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char 
 
         tcflush(tty_fd, TCIFLUSH);
         flushWithSpace(tty_fd);
-        //usleep(100);
-        //printf("Flush\n");
-
         while (c!='q')
         {
                 c=0;
@@ -123,7 +127,7 @@ int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char 
                         if(c == MSG_YES)
                         {
                             //memset(p_data_out, 0, sizeof(char) * size_data_out); 
-                            printf("MSG Yes received\n"); // DEBUG
+                            //printf("MSG Yes received\n"); // DEBUG
                             readMsg(tty_fd, p_data_out, size_data_out);
                         }
                         else //MSG_NO 
@@ -151,21 +155,3 @@ int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char 
         return 0;
 }
 
-
-/*                     
- *  +---------------+
- *  | Test Function |
- *  +---------------+
- */
-
-/* Le but de ce test est de recevoir le msg Yes or No de la part de 
- * la carte */
-
-/* Le but de ce test est de verifier la bonne reception de No quand la carte
- * envoie NO */
-
-/* Le but de ce test est de verifier la bonne reception de Yes quand la carte
- * envoie Yes */
-
-/* Le but de ce test est de verifier la bonne reception de Yes quand la carte
- * envoie Yes */

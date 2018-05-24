@@ -17,12 +17,6 @@ std::list<std::string>myList;
 SerialLora::SerialLora(const std::string port){
     
     this->port = string(port);
-    /*
-     fd = open_port(this->port.c_str(), &termios_old);
-    if(fd < 0 )
-        cout << "Wrong port" << endl; 
-    */
-
     const size_t size_buffer = 200;
 
     p_data_in  = (char *)calloc(size_buffer , sizeof(char) );
@@ -40,12 +34,8 @@ SerialLora::~SerialLora(){
 
     if(p_data_in != NULL)
         free(p_data_in);
-    /*
-    if(fd > 0)
-        if(close_port(port.c_str(), &termios_old, fd) != 0)
-            cout << "error" << endl; 
-    */
 }
+
 
 int SerialLora::serial_thread(){
 
