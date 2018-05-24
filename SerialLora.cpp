@@ -53,11 +53,12 @@ int SerialLora::serial_thread(){
     if(p_data_in == NULL || p_data_out == NULL)
         return -1;
 
-    std::thread t1(serialExchange,this->port.c_str(), p_data_in, 200, p_data_out, 200);
+    //std::thread t1(serialExchange,this->port.c_str(), p_data_in, 200, p_data_out, 200);
+    serialExchange(this->port.c_str(), p_data_in, 200, p_data_out, 200);
 
     //std::thread t2(reader);
 
-    t1.join();
+    //t1.join();
     //t2.join();
 
 /*

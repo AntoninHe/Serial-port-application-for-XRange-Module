@@ -42,10 +42,12 @@ void raw_mode (int fd, struct termios *old_term)
 
 int readMsg(int fd, char *buffer, size_t buffer_size){
     int i=0;
-    char c;
-    c=0;
+    char c=0;
+    char r=MSG_NO;
+
     while( c!= ' '){ 
         while(read(fd, &c, 1) < 1); // read the message
+ 
         printf("\n%d %c\n", i, c);// DEBUG
         buffer[i] = c; 
         i++;
@@ -84,7 +86,7 @@ int flushWithSpace(int fd){
 }
 
 int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char *p_data_out, size_t size_data_out){
-        int iDEBUG = 0;
+        //int iDEBUG = 0;
         int tty_fd;
         
 	struct termios old;
@@ -102,7 +104,7 @@ int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char 
 
         printf("File descriptor : %d \n",tty_fd);
         raw_mode(tty_fd, &old);
-        printf("Pass to raw mode\n");
+        printf("Pass to law mode\n");
 
         tcflush(tty_fd, TCIFLUSH);
         flushWithSpace(tty_fd);
@@ -116,6 +118,7 @@ int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char 
         //iDEBUG ++;
         //printf("hello %d \n",iDEBUG);
                     if(c == MSG_YES || c == MSG_NO){
+                        usleep(10000);
                         say_Y_N(tty_fd, new_msg);
                         if(c == MSG_YES)
                         {
@@ -147,3 +150,22 @@ int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char 
         close(tty_fd);
         return 0;
 }
+
+
+/*                     
+ *  +---------------+
+ *  | Test Function |
+ *  +---------------+
+ */
+
+/* Le but de ce test est de recevoir le msg Yes or No de la part de 
+ * la carte */
+
+/* Le but de ce test est de verifier la bonne reception de No quand la carte
+ * envoie NO */
+
+/* Le but de ce test est de verifier la bonne reception de Yes quand la carte
+ * envoie Yes */
+
+/* Le but de ce test est de verifier la bonne reception de Yes quand la carte
+ * envoie Yes */
