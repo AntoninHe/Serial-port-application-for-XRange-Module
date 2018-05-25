@@ -1,16 +1,20 @@
 #include "SerialLora.hpp"
-#include <iostream>
-#include <thread>
-#include <mutex>
-#include <list>
-
+#include <iostream>             // sdt::cout, sdt::cin, sdt::endl
+#include <list>                 // sdt::list
+#include <thread>               // std::thread
+#include <mutex>                // std::mutex, std::unique_lock
+#include <condition_variable>   // std::condition_variable
 using std::string;
 using std::cout;
 using std::cin;
 using std::endl;
 
 std::mutex myMutex;
+std::mutex myNotifier;
 std::list<std::string>myList;
+std::condition_variable cv;
+int done;
+
 
 #include "serial_lora.hpp"
 
@@ -36,6 +40,19 @@ SerialLora::~SerialLora(){
         free(p_data_in);
 }
 
+void thread_consummer(){
+    while(1){
+        std::unique_lock<std::mutex> locker(myMutex);
+        cv.wait(locker, [](){return done == 1;});
+        done = 0;
+        if( !myList.empty() ){
+            string myString(myList.front());
+            myList.pop_front();
+            cout << myString << endl; 
+        }
+    }
+}
+
 
 int SerialLora::serial_thread(){
 
@@ -44,12 +61,10 @@ int SerialLora::serial_thread(){
         return -1;
 
     std::thread t1(serialExchange,this->port.c_str(), p_data_in, 200, p_data_out, 200);
-    //serialExchange(this->port.c_str(), p_data_in, 200, p_data_out, 200);
-
-    //std::thread t2(reader);
+    std::thread t2(thread_consummer);
 
     t1.join();
-    //t2.join();
+    t2.join();
 
 /*
     p_data_out[0] = 'a';
