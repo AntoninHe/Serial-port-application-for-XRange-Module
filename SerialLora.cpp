@@ -11,7 +11,7 @@ using std::endl;
 
 std::mutex myMutex;
 std::mutex myNotifier;
-std::list<std::string>myList;
+std::string msg_string;
 std::condition_variable cv;
 int done;
 
@@ -45,9 +45,9 @@ void thread_consummer(){
         std::unique_lock<std::mutex> locker(myMutex);
         cv.wait(locker, [](){return done == 1;});
         done = 0;
-        if( !myList.empty() ){
-            string myString(myList.front());
-            myList.pop_front();
+        if( !msg_string.empty() ){
+            string myString(msg_string);
+            msg_string.clear();
             cout << myString << endl; 
         }
     }

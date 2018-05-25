@@ -22,7 +22,7 @@
 #define MSG_NO '?'
 
 extern std::mutex myMutex;
-extern std::list<std::string>myList;
+extern std::string msg_string;
 extern std::condition_variable cv;
 extern int done;
 
@@ -62,8 +62,7 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
     buffer[ i++ ] = '\0'; // DEBUG
     {
         std::lock_guard<std::mutex> lk(myMutex);
-        std::string mystring(buffer);
-        myList.push_back(mystring);
+        msg_string  = std::string(buffer);
     }
     done = 1;
     cv.notify_one();
