@@ -1,22 +1,20 @@
 #include "SerialLora.hpp"
+#include "serial_lora.hpp"
+
 #include <iostream>             // sdt::cout, sdt::cin, sdt::endl
-#include <list>                 // sdt::list
 #include <thread>               // std::thread
 #include <mutex>                // std::mutex, std::unique_lock
 #include <condition_variable>   // std::condition_variable
+
 using std::string;
 using std::cout;
 using std::cin;
 using std::endl;
 
 std::mutex myMutex;
-std::mutex myNotifier;
 std::string msg_string;
 std::condition_variable cv;
 int done;
-
-
-#include "serial_lora.hpp"
 
 SerialLora::SerialLora(const std::string port){
     
@@ -24,12 +22,8 @@ SerialLora::SerialLora(const std::string port){
     const size_t size_buffer = 200;
 
     p_data_in  = (char *)calloc(size_buffer , sizeof(char) );
-    //if(p_data_in == NULL)
-        //return -1;
 
     p_data_out  = (char *)calloc(size_buffer , sizeof(char) );
-    //if(p_data_out == NULL)
-        //return -1;
 }
 
 SerialLora::~SerialLora(){

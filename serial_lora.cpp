@@ -5,7 +5,6 @@
  * https://en.wikibooks.org/wiki/Serial_Programming/termios
  */
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -14,7 +13,6 @@
 #include <stdbool.h>
 
 #include <iostream>             // sdt::cout, sdt::cin, sdt::endl
-#include <list>                 // sdt::list
 #include <mutex>                // std::mutex, std::unique_lock
 #include <condition_variable>   // std::condition_variable
 
