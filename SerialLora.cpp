@@ -11,10 +11,11 @@ using std::cout;
 using std::cin;
 using std::endl;
 
-std::mutex myMutex;
+std::mutex mutex_serial_port;
+std::condition_variable cv_serial_port;
+int done_serial_port;
+
 std::string msg_string;
-std::condition_variable cv;
-int done;
 
 SerialLora::SerialLora(const std::string port){
     
@@ -22,7 +23,6 @@ SerialLora::SerialLora(const std::string port){
     const size_t size_buffer = 200;
 
     p_data_in  = (char *)calloc(size_buffer , sizeof(char) );
-
     p_data_out  = (char *)calloc(size_buffer , sizeof(char) );
 }
 
@@ -36,9 +36,9 @@ SerialLora::~SerialLora(){
 
 void thread_consummer(){
     while(1){
-        std::unique_lock<std::mutex> locker(myMutex);
-        cv.wait(locker, [](){return done == 1;});
-        done = 0;
+        std::unique_lock<std::mutex> locker(mutex_serial_port);
+        cv_serial_port.wait(locker, [](){return done_serial_port == 1;});
+        done_serial_port = 0;
         if( !msg_string.empty() ){
             string myString(msg_string);
             msg_string.clear();

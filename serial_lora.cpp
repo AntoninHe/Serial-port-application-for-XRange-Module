@@ -19,10 +19,10 @@
 #define MSG_YES '!'
 #define MSG_NO '?'
 
-extern std::mutex myMutex;
+extern std::mutex mutex_serial_port;
 extern std::string msg_string;
-extern std::condition_variable cv;
-extern int done;
+extern std::condition_variable cv_serial_port;
+extern int done_serial_port;
 
 using std::cout;
 using std::cin;
@@ -59,11 +59,11 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
     }
     buffer[ i++ ] = '\0'; // DEBUG
     {
-        std::lock_guard<std::mutex> lk(myMutex);
+        std::lock_guard<std::mutex> lk(mutex_serial_port);
         msg_string  = std::string(buffer);
     }
-    done = 1;
-    cv.notify_one();
+    done_serial_port = 1;
+    cv_serial_port.notify_one();
     return i;
 }
 
