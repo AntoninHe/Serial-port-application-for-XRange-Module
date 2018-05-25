@@ -82,4 +82,3 @@ int SerialLora::read_msg(std::string msg){
 
     return -1;
 }
-

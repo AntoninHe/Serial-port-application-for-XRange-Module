@@ -26,6 +26,10 @@ extern std::list<std::string>myList;
 extern std::condition_variable cv;
 extern int done;
 
+using std::cout;
+using std::cin;
+using std::endl;
+
 void raw_mode (int fd, struct termios *old_term)
 {
     struct termios term;
@@ -37,10 +41,10 @@ void raw_mode (int fd, struct termios *old_term)
     cfmakeraw (&term);
     
     if(cfsetspeed(&term, B57600) != 0 )
-        printf("Error set speed\n");
+        cout << "Error set speed" << endl;
 
     if(tcsetattr(fd, TCSANOW, &term) != 0)
-        printf("Error set attr\n");
+        cout << "Error set attr" << endl;
 }
 
 int read_msg(int fd, char *buffer, size_t buffer_size){
@@ -51,7 +55,7 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
         buffer[i] = c; 
         i++;
         if(i + 2 > buffer_size){
-            printf("error read msg overflow");
+            cout << "Error read msg overflow" << endl;
             break;
         }
     }
@@ -75,7 +79,7 @@ int say_Y_N(int fd, bool new_msg){
         r = MSG_NO;
     }
     if( write(fd, &r, 1) != 1){
-        printf("error write");
+        cout << "Error write" << endl;
         return -1;
     }
     return 0;
@@ -97,16 +101,14 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
         char c='D';
         bool new_msg = false;
 
-        printf("try open port\n");
-
         tty_fd = open(port, O_RDWR);
 
         if(tty_fd == -1)
             return -1;
 
-        printf("File descriptor : %d \n",tty_fd);
+        cout << "File descriptor : " << tty_fd << endl;
         raw_mode(tty_fd, &old);
-        printf("Pass to law mode\n");
+        cout << "Pass to law mode" << endl;
 
         tcflush(tty_fd, TCIFLUSH);
         flush_with_space(tty_fd);
@@ -130,10 +132,10 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
                     if( new_msg == true){
                         
                         if (write(tty_fd, p_data_in, size_data_in) == size_data_in){ // write YES
-                            printf("Msg Send\n"); // DEBUG
+                            //printf("Msg Send\n"); // DEBUG
                         }
                         else{
-                            printf("Fail send\n");
+                            cout << "Sending failed" << endl;
                         }
                     }
                 }
@@ -142,7 +144,7 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
                 }
             }
         }
-        printf("close port\n");
+        cout << "Close port" << endl;
         tcsetattr(tty_fd, TCSANOW, &old);
         close(tty_fd);
         return 0;
