@@ -56,22 +56,14 @@ void thread_consummer(){
 
 int SerialLora::serial_thread(){
 
-    //bool new_msg = true;
     if(p_data_in == NULL || p_data_out == NULL)
         return -1;
 
-    std::thread t1(serialExchange,this->port.c_str(), p_data_in, 200, p_data_out, 200);
-    std::thread t2(thread_consummer);
+    std::thread t1(thread_consummer);
+    std::thread t2(serial_exchange,this->port.c_str(), p_data_in, 200, p_data_out, 200);
 
     t1.join();
     t2.join();
-
-/*
-    p_data_out[0] = 'a';
-    p_data_out[1] = 'b';
-    p_data_out[2] = 'c';
-    p_data_out[3] = ' ';
-*/
 
     return 0;
 }

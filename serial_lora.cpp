@@ -43,7 +43,7 @@ void raw_mode (int fd, struct termios *old_term)
         printf("Error set attr\n");
 }
 
-int readMsg(int fd, char *buffer, size_t buffer_size){
+int read_msg(int fd, char *buffer, size_t buffer_size){
     int i=0;
     char c=0;
     while( c!= ' '){ 
@@ -57,7 +57,7 @@ int readMsg(int fd, char *buffer, size_t buffer_size){
     }
     buffer[ i++ ] = '\0'; // DEBUG
     {
-    std::lock_guard<std::mutex> lk(myMutex);
+        std::lock_guard<std::mutex> lk(myMutex);
         std::string mystring(buffer);
         myList.push_back(mystring);
     }
@@ -78,11 +78,10 @@ int say_Y_N(int fd, bool new_msg){
         printf("error write");
         return -1;
     }
-    //printf("write ok\n");// Debug
     return 0;
 }
 
-int flushWithSpace(int fd){
+int flush_with_space(int fd){
     char c = ' ';
     if (write(fd, &c, 1) > 0){ 
         return 0;
@@ -90,8 +89,7 @@ int flushWithSpace(int fd){
     return -1;
 }
 
-int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char *p_data_out, size_t size_data_out){
-        //int iDEBUG = 0;
+int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char *p_data_out, size_t size_data_out){
         int tty_fd;
         
 	struct termios old;
@@ -101,8 +99,7 @@ int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char 
 
         printf("try open port\n");
 
-        //tty_fd = open(port, O_RDWR | O_NONBLOCK );
-        tty_fd = open(port, O_RDWR);// | O_NONBLOCK );
+        tty_fd = open(port, O_RDWR);
 
         if(tty_fd == -1)
             return -1;
@@ -112,13 +109,11 @@ int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char 
         printf("Pass to law mode\n");
 
         tcflush(tty_fd, TCIFLUSH);
-        flushWithSpace(tty_fd);
+        flush_with_space(tty_fd);
         while (c!='q')
         {
             c=0;
-            if (read(tty_fd,&c,1) > 0 ){; //&& (c == MSG_YES || c == MSG_NO )){
-        //iDEBUG ++;
-        //printf("hello %d \n",iDEBUG);
+            if (read(tty_fd,&c,1) > 0 ){
                 if(c == MSG_YES || c == MSG_NO){
                     usleep(10000);
                     say_Y_N(tty_fd, new_msg);
@@ -126,7 +121,7 @@ int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char 
                     {
                         //memset(p_data_out, 0, sizeof(char) * size_data_out); 
                         //printf("MSG Yes received\n"); // DEBUG
-                        readMsg(tty_fd, p_data_out, size_data_out);
+                        read_msg(tty_fd, p_data_out, size_data_out);
                     }
                     else //MSG_NO 
                     {

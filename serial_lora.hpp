@@ -26,6 +26,6 @@
  *              -2 if tranmission error
  *
  * */
-int serialExchange(const char *port, char *p_data_in, size_t size_data_in, char *p_data_out, size_t size_data_out);
+int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char *p_data_out, size_t size_data_out);
 
 #endif
