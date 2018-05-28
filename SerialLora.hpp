@@ -2,6 +2,9 @@
 #include <string>
 #include <termios.h>
 
+#ifndef SERIAL_LORA_CLASS_HPP
+#define SERIAL_LORA_CLASS_HPP
+
 class SerialLora{
     public : 
         SerialLora(const std::string port);
@@ -19,3 +22,5 @@ class SerialLora{
         char *p_data_out = NULL;
         char *p_data_in = NULL;
 };
+
+#endif
