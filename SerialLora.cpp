@@ -15,6 +15,10 @@ std::mutex mutex_serial_port;
 std::condition_variable cv_serial_port;
 int done_serial_port;
 
+//std::mutex mutex_forwarder;
+//std::condition_variable cv_forwarder;
+//int done_forwarder;
+
 std::string msg_string;
 
 SerialLora::SerialLora(const std::string port){
@@ -34,6 +38,7 @@ SerialLora::~SerialLora(){
         free(p_data_in);
 }
 
+
 void thread_consummer(){
     while(1){
         std::unique_lock<std::mutex> locker(mutex_serial_port);
@@ -46,7 +51,6 @@ void thread_consummer(){
         }
     }
 }
-
 
 int SerialLora::serial_thread(){
 

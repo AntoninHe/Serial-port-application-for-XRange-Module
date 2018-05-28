@@ -20,9 +20,10 @@
 #define MSG_NO '?'
 
 extern std::mutex mutex_serial_port;
-extern std::string msg_string;
 extern std::condition_variable cv_serial_port;
 extern int done_serial_port;
+
+extern std::string msg_string;
 
 using std::cout;
 using std::cin;
