@@ -51,7 +51,6 @@ bool sx1272 = true;
 int maxMessages = 10;
 
 byte modemstat;
-byte receivedbytes;
 
 struct sockaddr_in si_other;
 int s, slen=sizeof(si_other);
@@ -101,8 +100,8 @@ static char description[64] = "Singe Channel Gateway";  // used for free form de
 // define servers
 // TODO: use host names and dns
 //
-//#define DEFAULTSERVER "127.0.0.1"     
-#define DEFAULTSERVER "52.169.76.203" // router.eu.thethings.network
+#define DEFAULTSERVER "127.0.0.1"     
+//#define DEFAULTSERVER "52.169.76.203" // router.eu.thethings.network
 #define DEFAULTPORT 1700                   // The port on which to send data
 
 // #############################################
@@ -193,14 +192,11 @@ int resolve_ip_address(const char * hostname , char* ip) {
 void sendudp(char *msg, int length) {
 
 //send the update
-    cout << "debug HELLO" << endl;
     std::map<std::string, std::pair<std::string, int> >::iterator iter;
     for(iter = serverList.begin(); iter != serverList.end(); iter++)
     {
-        cout << "debug" << endl;
         cout << iter->second.second << endl;
         cout << iter->second.first << endl;
-        cout << "debug" << endl << endl;
         si_other.sin_port = htons(iter->second.second);
         inet_aton(iter->second.first.c_str(), &si_other.sin_addr);
         if (sendto(s, (char *)msg, length, 0 , (struct sockaddr *) &si_other, slen)==-1)
@@ -262,7 +258,7 @@ void sendstat() {
 
 }
 
-void receivepacket() {
+void receivepacket(char my_msg[], byte receivedbytes) {
 
     long int SNR;
     int rssicorr;
@@ -290,7 +286,7 @@ void receivepacket() {
             printf("\n");
 
             int j;
-            j = bin_to_b64((uint8_t *)message, receivedbytes, (char *)(b64), 341);
+            //j = bin_to_b64((uint8_t *)message, receivedbytes, (char *)(b64), 341);
             //fwrite(b64, sizeof(char), j, stdout);
 
             char buff_up[TX_BUFF_SIZE]; /* buffer to compose the upstream packet */
@@ -416,14 +412,25 @@ void receivepacket() {
             
             //j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE-buff_index, ",\"rssi\":%d,\"size\":%u", readRegister(0x1A)-rssicorr, receivedbytes);
             j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE-buff_index, ",\"rssi\":%d,\"size\":%u", 0, receivedbytes);
+            buff_index += j;
 
             /////////////////////////////////////////////////////////////////
             
-            buff_index += j;
             memcpy((void *)(buff_up + buff_index), (void *)",\"data\":\"", 9);
             buff_index += 9;
-            j = bin_to_b64((uint8_t *)message, receivedbytes, (char *)(buff_up + buff_index), 341);
-            buff_index += j;
+
+////////////////////////////////////////////////////////////////////////
+///                  Message received                               ////
+////////////////////////////////////////////////////////////////////////
+
+            memcpy((void *)(buff_up + buff_index), (void *)(my_msg), receivedbytes);
+
+            buff_index += receivedbytes;
+
+            //j = bin_to_b64((uint8_t *)message, receivedbytes, (char *)(buff_up + buff_index), 341);
+
+//////////////////////////////////////////////////////////////////////// ////////////////////////////////////////////////////////////////////////
+            //buff_index += j;
             buff_up[buff_index] = '"';
             ++buff_index;
 
@@ -588,7 +595,7 @@ void parseCommandline(int argc, char *argv[])
 
 }
 
-void testForwarder(){
+void testForwarder(char my_msg[], byte receivedbytes){
  
      std::stringstream desc;
      desc << "Single channel, ";
@@ -607,26 +614,13 @@ void testForwarder(){
      si_other.sin_port = htons(DEFAULTPORT);
  
      ifr.ifr_addr.sa_family = AF_INET;
-     //strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);  // can we rely on eth0?
      strncpy(ifr.ifr_name, "enp0s31f6:", IFNAMSIZ-1);  // can we rely on eth0?
-     //ioctl(s, SIOCGIFHWADDR, &ifr);
-
-// gateway mac addr
 
      printf("Listening at SF%i on %.6lf Mhz.\n", sf,(double)freq/1000000);
  
-//     std::map<std::string, std::pair<std::string, int> >::iterator iter;
-//     
-//     for(iter = serverList.begin(); iter != serverList.end(); iter++)
-//     {
-//         printf("Forwarding packets to: %s (%s), port: %d\n", iter->first.c_str(), iter->second.first.c_str(), iter->second.second);
-//     }
+    //while(1) {
  
-     printf("------------------\n");
- 
-     while(1) {
- 
-         //receivepacket();
+         receivepacket(my_msg, receivedbytes);
  
          gettimeofday(&nowtime, NULL);
          uint32_t nowseconds = (uint32_t)(nowtime.tv_sec);
@@ -637,7 +631,7 @@ void testForwarder(){
              cp_nb_rx_ok = 0;
              cp_up_pkt_fwd = 0;
          }
-     }
+     //}
      //return (0);
  }
 

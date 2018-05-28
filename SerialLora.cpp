@@ -1,10 +1,14 @@
 #include "SerialLora.hpp"
 #include "serial_lora.hpp"
+#include "forwarder.hpp"
 
-#include <iostream>             // sdt::cout, sdt::cin, sdt::endl
-#include <thread>               // std::thread
-#include <mutex>                // std::mutex, std::unique_lock
+#include <string.h> // memcpy
+
 #include <condition_variable>   // std::condition_variable
+#include <iostream>             // sdt::cout, sdt::cin, sdt::endl
+#include <list>                 // std::list
+#include <mutex>                // std::mutex, std::unique_lock
+#include <thread>               // std::thread
 
 using std::string;
 using std::cout;
@@ -14,6 +18,8 @@ using std::endl;
 std::mutex mutex_serial_port;
 std::condition_variable cv_serial_port;
 int done_serial_port;
+
+std::list<char *> list_msg_r;
 
 //std::mutex mutex_forwarder;
 //std::condition_variable cv_forwarder;
@@ -41,14 +47,25 @@ SerialLora::~SerialLora(){
 
 void thread_consummer(){
     while(1){
+        
         std::unique_lock<std::mutex> locker(mutex_serial_port);
         cv_serial_port.wait(locker, [](){return done_serial_port == 1;});
         done_serial_port = 0;
-        if( !msg_string.empty() ){
-            string myString(msg_string);
-            msg_string.clear();
-            cout << myString << endl; 
-        }
+        //if( !msg_string.empty() ){
+        cout << list_msg_r.front() << endl;
+            //string myString(msg_string);
+
+            //size_t receivedbytes = myString.size();
+            //char test_msg[receivedbytes] ;
+            //memcpy( (void *)test_msg, (void *)myString.c_str(), receivedbytes);
+            //msg_string.clear();
+            //cout << myString << endl; 
+            //cout << "test cpy" << test_msg << " size: " << receivedbytes << endl;
+        
+        //char test_msg[] = "dG90bwo=";
+        //receivedbytes = 8;
+        //testForwarder(test_msg,receivedbytes);
+        //}
     }
 }
 
