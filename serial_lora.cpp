@@ -12,9 +12,11 @@
 #include <string.h> // needed for memset
 #include <stdbool.h>
 
-#include <iostream>             // sdt::cout, sdt::cin, sdt::endl
-#include <mutex>                // std::mutex, std::unique_lock
+
 #include <condition_variable>   // std::condition_variable
+#include <iostream>             // sdt::cout, sdt::cin, sdt::endl
+#include <list>                 // std::list
+#include <mutex>                // std::mutex, std::unique_lock
 
 #define MSG_YES '!'
 #define MSG_NO '?'
@@ -24,6 +26,8 @@ extern std::condition_variable cv_serial_port;
 extern int done_serial_port;
 
 extern std::string msg_string;
+
+extern std::list<char *> list_msg_r;
 
 using std::cout;
 using std::cin;
@@ -61,7 +65,9 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
     buffer[ i++ ] = '\0'; // DEBUG
     {
         std::lock_guard<std::mutex> lk(mutex_serial_port);
-        msg_string  = std::string(buffer);
+        char *p_msg_return = (char *)malloc( (i+1)*sizeof(char) );
+        memcpy( (void *)p_msg_return, (void *)buffer, i);
+        list_msg_r.push_back(p_msg_return);
     }
     done_serial_port = 1;
     cv_serial_port.notify_one();

@@ -10,6 +10,8 @@
  *******************************************************************************/
 
 
+typedef unsigned char byte;
+
 //using namespace std;
 
 // extern "C" {
@@ -32,6 +34,5 @@
 //void receivepacket() {
 
 void parseCommandline(int argc, char *argv[]);
-
-void testForwarder();
-
+  
+void testForwarder(char my_msg[], byte receivedbytes);
