@@ -28,9 +28,9 @@
 
 using namespace std;
 
-extern "C" {
-    #include "base64.h"
-}
+//extern "C" {
+//    #include "base64.h"
+//}
 
 #include "static_addr.h"
 
@@ -100,8 +100,8 @@ static char description[64] = "Singe Channel Gateway";  // used for free form de
 // define servers
 // TODO: use host names and dns
 //
-#define DEFAULTSERVER "127.0.0.1"     
-//#define DEFAULTSERVER "52.169.76.203" // router.eu.thethings.network
+//#define DEFAULTSERVER "127.0.0.1"     
+#define DEFAULTSERVER "52.169.76.203" // router.eu.thethings.network
 #define DEFAULTPORT 1700                   // The port on which to send data
 
 // #############################################
