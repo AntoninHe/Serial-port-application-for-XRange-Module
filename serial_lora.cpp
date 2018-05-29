@@ -17,6 +17,8 @@
 #include <iostream>             // sdt::cout, sdt::cin, sdt::endl
 #include <list>                 // std::list
 #include <mutex>                // std::mutex, std::unique_lock
+#include <queue>                // std::queue
+#include <tuple>                // std::tuple
 
 #define MSG_YES '!'
 #define MSG_NO '?'
@@ -25,9 +27,8 @@ extern std::mutex mutex_serial_port;
 extern std::condition_variable cv_serial_port;
 extern int done_serial_port;
 
-extern std::string msg_string;
-
-extern std::list<char *> list_msg_r;
+//extern std::list < std::tuple<char *,int> >msg_queue_r;
+extern std::queue < std::tuple<char *,int> >msg_queue_r;
 
 using std::cout;
 using std::cin;
@@ -62,12 +63,13 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
             break;
         }
     }
-    buffer[ i++ ] = '\0'; // DEBUG
+    i--; //for ignore the space later
+    //buffer[ i++ ] = '\0'; // DEBUG
     {
         std::lock_guard<std::mutex> lk(mutex_serial_port);
         char *p_msg_return = (char *)malloc( (i+1)*sizeof(char) );
         memcpy( (void *)p_msg_return, (void *)buffer, i);
-        list_msg_r.push_back(p_msg_return);
+        msg_queue_r.push( std::make_tuple(p_msg_return,i) );
     }
     done_serial_port = 1;
     cv_serial_port.notify_one();
@@ -112,7 +114,7 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
 
         cout << "File descriptor : " << tty_fd << endl;
         raw_mode(tty_fd, &old);
-        cout << "Pass to law mode" << endl;
+        cout << "Pass to raw mode" << endl;
 
         tcflush(tty_fd, TCIFLUSH);
         flush_with_space(tty_fd);

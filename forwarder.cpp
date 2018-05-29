@@ -429,7 +429,9 @@ void receivepacket(char my_msg[], byte receivedbytes) {
 
             //j = bin_to_b64((uint8_t *)message, receivedbytes, (char *)(buff_up + buff_index), 341);
 
-//////////////////////////////////////////////////////////////////////// ////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+///                END  Message received                            ////
+////////////////////////////////////////////////////////////////////////
             //buff_index += j;
             buff_up[buff_index] = '"';
             ++buff_index;
@@ -597,6 +599,15 @@ void parseCommandline(int argc, char *argv[])
 
 void testForwarder(char my_msg[], byte receivedbytes){
  
+////// server name init
+        char ip[INET6_ADDRSTRLEN];
+        hostToIp(DEFAULTSERVER, ip, INET6_ADDRSTRLEN);
+        std::string server = DEFAULTSERVER;
+        std::string address = ip;
+        serverList.insert(std::make_pair(server, std::make_pair(address, DEFAULTPORT)));
+////// server name init end
+
+
      std::stringstream desc;
      desc << "Single channel, ";
      desc << (double)freq/1000000 << "MHz, ";
@@ -620,18 +631,18 @@ void testForwarder(char my_msg[], byte receivedbytes){
  
     //while(1) {
  
-         receivepacket(my_msg, receivedbytes);
+     receivepacket(my_msg, receivedbytes);
  
-         gettimeofday(&nowtime, NULL);
-         uint32_t nowseconds = (uint32_t)(nowtime.tv_sec);
-         if (nowseconds - lasttime >= 30) {
-             lasttime = nowseconds;
-             sendstat();
-             cp_nb_rx_rcv = 0;
-             cp_nb_rx_ok = 0;
-             cp_up_pkt_fwd = 0;
-         }
-     //}
+    //      gettimeofday(&nowtime, NULL);
+    //      uint32_t nowseconds = (uint32_t)(nowtime.tv_sec);
+    //      if (nowseconds - lasttime >= 30) {
+    //          lasttime = nowseconds;
+    //          sendstat();
+    //          cp_nb_rx_rcv = 0;
+    //          cp_nb_rx_ok = 0;
+    //          cp_up_pkt_fwd = 0;
+    //      }
+    // }
      //return (0);
  }
 

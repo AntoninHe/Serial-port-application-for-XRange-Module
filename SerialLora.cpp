@@ -8,7 +8,10 @@
 #include <iostream>             // sdt::cout, sdt::cin, sdt::endl
 #include <list>                 // std::list
 #include <mutex>                // std::mutex, std::unique_lock
+#include <queue>                // std::queue
 #include <thread>               // std::thread
+#include <tuple>                // std::tuple
+
 
 using std::string;
 using std::cout;
@@ -19,20 +22,14 @@ std::mutex mutex_serial_port;
 std::condition_variable cv_serial_port;
 int done_serial_port;
 
-std::list<char *> list_msg_r;
-
-//std::mutex mutex_forwarder;
-//std::condition_variable cv_forwarder;
-//int done_forwarder;
-
-std::string msg_string;
+std::queue < std::tuple<char *,int> >msg_queue_r;
 
 SerialLora::SerialLora(const std::string port){
     
     this->port = string(port);
     const size_t size_buffer = 200;
 
-    p_data_in  = (char *)calloc(size_buffer , sizeof(char) );
+    p_data_in   = (char *)calloc(size_buffer , sizeof(char) );
     p_data_out  = (char *)calloc(size_buffer , sizeof(char) );
 }
 
@@ -44,28 +41,19 @@ SerialLora::~SerialLora(){
         free(p_data_in);
 }
 
-
 void thread_consummer(){
     while(1){
         
         std::unique_lock<std::mutex> locker(mutex_serial_port);
         cv_serial_port.wait(locker, [](){return done_serial_port == 1;});
         done_serial_port = 0;
-        //if( !msg_string.empty() ){
-        cout << list_msg_r.front() << endl;
-            //string myString(msg_string);
 
-            //size_t receivedbytes = myString.size();
-            //char test_msg[receivedbytes] ;
-            //memcpy( (void *)test_msg, (void *)myString.c_str(), receivedbytes);
-            //msg_string.clear();
-            //cout << myString << endl; 
-            //cout << "test cpy" << test_msg << " size: " << receivedbytes << endl;
-        
-        //char test_msg[] = "dG90bwo=";
-        //receivedbytes = 8;
-        //testForwarder(test_msg,receivedbytes);
-        //}
+        while(!msg_queue_r.empty()){
+        cout << std::get<0>(msg_queue_r.front()) << std::get<1>(msg_queue_r.front())<< endl;
+
+        testForwarder(std::get<0>(msg_queue_r.front()),std::get<1>(msg_queue_r.front()));
+        msg_queue_r.pop();
+        }
     }
 }
 
