@@ -1,6 +1,7 @@
 project('Serial Lora Lib', 'c', 'cpp')
 
 subdir('node_like_fct')
+subdir('semtechBase64')
 
 sources = [
     'main.cpp'          ,
@@ -10,12 +11,16 @@ sources = [
 ]
 
 libs = [
-    node_like_fct_lib # For testing node fct
+    node_like_fct_lib, # For testing node fct
+    base64_lib_sem
 ]
 
-inc = include_directories('node_like_fct')
+inc = include_directories(['node_like_fct','semtechBase64']) 
 
 executable('program_test_cpp', sources, 
-            link_args : '-pthread',
+            link_args : '-pthread')
+
+
+executable('test_node', 'testNodeFctFrame.cpp', 
             include_directories : inc,
             link_with : libs)
