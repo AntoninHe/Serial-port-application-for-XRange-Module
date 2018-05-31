@@ -102,6 +102,7 @@ static char description[64] = "Singe Channel Gateway";  // used for free form de
 //
 //#define DEFAULTSERVER "127.0.0.1"     
 #define DEFAULTSERVER "52.169.76.203" // router.eu.thethings.network
+
 #define DEFAULTPORT 1700                   // The port on which to send data
 
 // #############################################
@@ -325,6 +326,7 @@ void receivepacket(char my_msg[], byte receivedbytes) {
             // buff_up[10] = (unsigned char)ifr.ifr_hwaddr.sa_data[4];
             // buff_up[11] = (unsigned char)ifr.ifr_hwaddr.sa_data[5];
 
+             
             /* start composing datagram with the header */
             uint8_t token_h = (uint8_t)rand(); /* random token */
             uint8_t token_l = (uint8_t)rand(); /* random token */
@@ -382,28 +384,33 @@ void receivepacket(char my_msg[], byte receivedbytes) {
             }
             memcpy((void *)(buff_up + buff_index), (void *)"BW125\"", 6);
             buff_index += 6;
-            switch((int)((modemstat & 0xE0) >> 5)) {
-            case 1:
-                memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/5\"", 13);
-                buff_index += 13;
-                break;
-            case 2:
-                memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/6\"", 13);
-                buff_index += 13;
-                break;
-            case 3:
-                memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/7\"", 13);
-                buff_index += 13;
-                break;
-            case 4:
-                memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/8\"", 13);
-                buff_index += 13;
-                break;
-            default:
-                memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"?\"", 13);
-                buff_index += 11;
-            }
 
+              //"codr":"4/5"
+              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/5\"", 13);
+              buff_index += 13;
+//          switch((int)((modemstat & 0xE0) >> 5)) {
+//          case 1:
+//              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/5\"", 13);
+//              buff_index += 13;
+//              break;
+//          case 2:
+//              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/6\"", 13);
+//              buff_index += 13;
+//              break;
+//          case 3:
+//              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/7\"", 13);
+//              buff_index += 13;
+//              break;
+//          case 4:
+//              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/8\"", 13);
+//              buff_index += 13;
+//              break;
+//          default:
+//              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"?\"", 13);
+//              buff_index += 11;
+//          }
+
+             SNR=9;// "lsnr":9
             j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE-buff_index, ",\"lsnr\":%li", SNR);
             buff_index += j;
             /////////////////////////////////////////////////////////////////
@@ -411,7 +418,9 @@ void receivepacket(char my_msg[], byte receivedbytes) {
             /////////////////////////////////////////////////////////////////
             
             //j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE-buff_index, ",\"rssi\":%d,\"size\":%u", readRegister(0x1A)-rssicorr, receivedbytes);
-            j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE-buff_index, ",\"rssi\":%d,\"size\":%u", 0, receivedbytes);
+            
+            //"rssi":-69
+            j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE-buff_index, ",\"rssi\":%d,\"size\":%u", -69, receivedbytes);
             buff_index += j;
 
             /////////////////////////////////////////////////////////////////

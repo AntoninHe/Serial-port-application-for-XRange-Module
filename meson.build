@@ -3,6 +3,11 @@ project('Serial Lora Lib', 'c', 'cpp')
 subdir('node_like_fct')
 subdir('semtechBase64')
 
+sources_test = [
+    'testNodeFctFrame.cpp',
+    'forwarder.cpp'
+]
+
 sources = [
     'main.cpp'          ,
     'serial_lora.cpp'   ,
@@ -21,6 +26,6 @@ executable('program_test_cpp', sources,
             link_args : '-pthread')
 
 
-executable('test_node', 'testNodeFctFrame.cpp', 
+executable('test_node', sources_test, 
             include_directories : inc,
             link_with : libs)
