@@ -1,7 +1,6 @@
 #include "SerialLora.hpp"
 #include "serial_lora.hpp"
 #include "forwarder.hpp"
-#include "node_like_fct.h"
 
 #include <string.h> // memcpy
 
