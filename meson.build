@@ -22,7 +22,7 @@ libs = [
 
 inc = include_directories(['node_like_fct','semtechBase64']) 
 
-executable('program_test_cpp', sources, 
+executable('GateWay_single_channel_test', sources, 
             link_args : '-pthread')
 
 
