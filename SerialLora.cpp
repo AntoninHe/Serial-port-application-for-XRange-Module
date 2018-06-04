@@ -12,17 +12,29 @@
 #include <thread>               // std::thread
 #include <tuple>                // std::tuple
 
-
 using std::string;
 using std::cout;
 using std::cin;
 using std::endl;
 
+extern bool new_msg;
+
+/////////////////////////////////////////////////
 std::mutex mutex_serial_port;
 std::condition_variable cv_serial_port;
 int done_serial_port;
 
 std::queue < std::tuple<char *,int> >msg_queue_r;
+/////////////////////////////////////////////////
+
+/////////////////////////////////////////////////
+std::mutex mutex_serial_port_send;
+std::condition_variable cv_serial_port_send;
+
+std::queue < std::tuple<char *,int> >msg_queue_s;
+char *p_msg_user;
+int msg_size_user;
+/////////////////////////////////////////////////
 
 SerialLora::SerialLora(const std::string port){
     
@@ -39,6 +51,32 @@ SerialLora::~SerialLora(){
 
     if(p_data_in != NULL)
         free(p_data_in);
+}
+
+void thread_HIM(){
+    while(1){
+        cout << "enter msg to be send by your lora node" << endl;
+        string user_msg;
+        cin >> user_msg;
+        user_msg = user_msg + " ";
+        {
+            std::unique_lock<std::mutex> locker(mutex_serial_port_send);
+            int msg_size_user =  user_msg.length();
+            p_msg_user = (char *)malloc( (msg_size_user)*sizeof(char) );
+            memcpy( (void *)p_msg_user, (void *)user_msg.c_str(), msg_size_user);
+            new_msg = true;
+            cv_serial_port_send.wait(locker, [](){return new_msg == false;});
+        }
+        //TODO REPLACE WITH condition variable
+        while(p_msg_user != NULL);
+        
+
+
+        //msg_queue_r.push( std::make_tuple(p_msg_return,i) );
+
+        
+
+    }
 }
 
 void thread_consummer(){
@@ -65,8 +103,11 @@ int SerialLora::serial_thread(){
     std::thread t1(thread_consummer);
     std::thread t2(serial_exchange,this->port.c_str(), p_data_in, 200, p_data_out, 200);
 
+    std::thread t3(thread_HIM);
+
     t1.join();
     t2.join();
+    t3.join();
 
     return 0;
 }

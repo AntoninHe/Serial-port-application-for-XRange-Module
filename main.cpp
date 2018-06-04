@@ -3,8 +3,10 @@
 
 int main (int argc, char *argv[]){
 
-     if(argc < 2)
+     if(argc < 2){
+         std::cout << "Need the path to the node serial port" << std::endl;
          return -1;
+     }
 
      std::string port_name(argv[1]);
      std::cout << argv[1] << std::endl;
