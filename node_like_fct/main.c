@@ -161,12 +161,12 @@ States_t State = LOWPOWER;
 int8_t RssiValue = 0;
 int8_t SnrValue = 0;
 
-static bool new_gateway_node_to_gateway_pc = false;
-static bool node_bridge_to_node_gateway = false;
+// static bool new_gateway_node_to_gateway_pc = false;
+// static bool node_bridge_to_node_gateway = false;
 
-static size_t sizeDataFromBridgeNodeForPcGateway = 0;
+// static size_t sizeDataFromBridgeNodeForPcGateway = 0;
 
-static uint8_t dataFromBridgeNodeForPcGateway[ VCOM_BUFF_SIZE ]={0};
+// static uint8_t dataFromBridgeNodeForPcGateway[ VCOM_BUFF_SIZE ]={0};
 //static uint8_t device_data[ VCOM_BUFF_SIZE/2 ]={'m','y','_','d','a','t','A'}; //size 7
 
 void PrepareFrameTx(uint8_t *MyBuffer, uint8_t LoRaMacTxPayloadLen)
