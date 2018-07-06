@@ -67,7 +67,7 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
         while(read(fd, &c, 1) < 1); // read the message
         buffer[i] = c; 
         i++;
-        if(i + 2 > buffer_size){
+        if(  (size_t)i + 2 > buffer_size){
             cout << "Error read msg overflow" << endl;
             break;
         }
@@ -147,7 +147,7 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
                     if( new_msg == true){
                         std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
                         //if (write(tty_fd, p_data_in, size_data_in) == size_data_in){ // write YES
-                        if (write(tty_fd, p_msg_user, size_data_in) == size_data_in){ // write YES
+                        if (write(tty_fd, p_msg_user, size_data_in) == (ssize_t)size_data_in){ // write YES
                             new_msg = false;
                             free(p_msg_user);
                             p_msg_user = NULL;
