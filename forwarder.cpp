@@ -261,7 +261,7 @@ void sendstat() {
 void receivepacket(char my_msg[], byte receivedbytes) {
 
     long int SNR;
-    int rssicorr;
+// int rssicorr;
 
 ///////////////////////////////////////////////////////////
 // TODO
@@ -271,13 +271,10 @@ void receivepacket(char my_msg[], byte receivedbytes) {
                 // Divide by 4
                 SNR = 0 ;//( value & 0xFF ) >> 2;
 
-            rssicorr = 139;// sx1272
-            // rssicorr = 157; // else sx1272
+            // rssicorr = 139;// sx1272
+            // // rssicorr = 157; // else sx1272
 
 ///////////////////////////////////////////////////////////
-
-
-
 
             //printf("Packet RSSI: %d, ",readRegister(0x1A)-rssicorr);
             //printf("RSSI: %d, ",readRegister(0x1B)-rssicorr);
