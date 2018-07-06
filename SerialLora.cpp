@@ -20,7 +20,7 @@ using std::endl;
 extern bool new_msg;
 
 /////////////////////////////////////////////////
-std::mutex mutex_serial_port;
+std::mutex mutex_serial_port_read;
 std::condition_variable cv_serial_port;
 int done_serial_port;
 
@@ -28,7 +28,7 @@ std::queue < std::tuple<char *,int> >msg_queue_r;
 /////////////////////////////////////////////////
 
 /////////////////////////////////////////////////
-std::mutex mutex_serial_port_send;
+std::mutex mutex_serial_port_read_send;
 std::condition_variable cv_serial_port_send;
 
 std::queue < std::tuple<char *,int> >msg_queue_s;
@@ -59,18 +59,16 @@ void thread_HIM(){
         string user_msg;
         cin >> user_msg;
         user_msg = user_msg + " ";
+        int msg_size_user =  user_msg.length();
+        cout << msg_size_user;
         {
-            std::unique_lock<std::mutex> locker(mutex_serial_port_send);
-            int msg_size_user =  user_msg.length();
+            cout << msg_size_user;
+            std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
             p_msg_user = (char *)malloc( (msg_size_user)*sizeof(char) );
             memcpy( (void *)p_msg_user, (void *)user_msg.c_str(), msg_size_user);
             new_msg = true;
             cv_serial_port_send.wait(locker, [](){return new_msg == false;});
         }
-        //TODO REPLACE WITH condition variable
-        while(p_msg_user != NULL);
-        
-
 
         //msg_queue_r.push( std::make_tuple(p_msg_return,i) );
 
@@ -81,8 +79,7 @@ void thread_HIM(){
 
 void thread_consummer(){
     while(1){
-        
-        std::unique_lock<std::mutex> locker(mutex_serial_port);
+        std::unique_lock<std::mutex> locker(mutex_serial_port_read);
         cv_serial_port.wait(locker, [](){return done_serial_port == 1;});
         done_serial_port = 0;
 
