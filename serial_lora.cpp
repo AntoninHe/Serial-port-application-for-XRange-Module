@@ -25,7 +25,7 @@
 
 bool new_msg = false;
 
-extern std::mutex mutex_serial_port;
+extern std::mutex mutex_serial_port_read;
 extern std::condition_variable cv_serial_port;
 extern int done_serial_port;
 
@@ -35,7 +35,7 @@ extern std::queue < std::tuple<char *,int> >msg_queue_r;
 extern char *p_msg_user;
 extern int msg_size_user;
 
-extern std::mutex mutex_serial_port_send;
+extern std::mutex mutex_serial_port_read_send;
 extern std::condition_variable cv_serial_port_send;
 extern std::queue < std::tuple<char *,int> >msg_queue_s;
 
@@ -75,7 +75,7 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
     i--; //purpose: ignore the space at the end of the buffer later
     //buffer[ i++ ] = '\0'; // DEBUG
     {
-        std::lock_guard<std::mutex> lk(mutex_serial_port);
+        std::lock_guard<std::mutex> lk(mutex_serial_port_read);
         char *p_msg_return = (char *)malloc( (i+1)*sizeof(char) );
         memcpy( (void *)p_msg_return, (void *)buffer, i);
         msg_queue_r.push( std::make_tuple(p_msg_return,i) );
@@ -140,12 +140,12 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
                         //printf("MSG Yes received\n"); // DEBUG
                         read_msg(tty_fd, p_data_out, size_data_out);
                     }
-                    else //MSG_NO 
-                    {
-                        //printf("MSG NO received\n"); // DEBUG   
-                    }
+                    // else //MSG_NO 
+                    // {
+                    //     //printf("MSG NO received\n"); // DEBUG   
+                    // }
                     if( new_msg == true){
-                        std::unique_lock<std::mutex> locker(mutex_serial_port_send);
+                        std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
                         //if (write(tty_fd, p_data_in, size_data_in) == size_data_in){ // write YES
                         if (write(tty_fd, p_msg_user, size_data_in) == size_data_in){ // write YES
                             new_msg = false;
