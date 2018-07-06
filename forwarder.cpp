@@ -40,8 +40,6 @@ using namespace std;
 typedef bool boolean;
 typedef unsigned char byte;
 
-static const int CHANNEL = 0;
-
 byte currentMode = 0x81;
 
 char message[256];
@@ -623,8 +621,6 @@ void testForwarder(char my_msg[], byte receivedbytes){
      desc << (double)freq/1000000 << "MHz, ";
      desc << "SF" << sf;
      strncpy(description, desc.str().c_str(), 64);
-     struct timeval nowtime;
-     uint32_t lasttime;
  
      if ( (s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
      {
