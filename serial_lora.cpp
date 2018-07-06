@@ -29,7 +29,6 @@ extern std::mutex mutex_serial_port_read;
 extern std::condition_variable cv_serial_port;
 extern int done_serial_port;
 
-//extern std::list < std::tuple<char *,int> >msg_queue_r;
 extern std::queue < std::tuple<char *,int> >msg_queue_r;
 
 extern char *p_msg_user;
@@ -73,7 +72,6 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
         }
     }
     i--; //purpose: ignore the space at the end of the buffer later
-    //buffer[ i++ ] = '\0'; // DEBUG
     {
         std::lock_guard<std::mutex> lk(mutex_serial_port_read);
         char *p_msg_return = (char *)malloc( (i+1)*sizeof(char) );
@@ -136,23 +134,15 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
                     say_Y_N(tty_fd, new_msg);
                     if(c == MSG_YES)
                     {
-                        //memset(p_data_out, 0, sizeof(char) * size_data_out); 
-                        //printf("MSG Yes received\n"); // DEBUG
                         read_msg(tty_fd, p_data_out, size_data_out);
                     }
-                    // else //MSG_NO 
-                    // {
-                    //     //printf("MSG NO received\n"); // DEBUG   
-                    // }
                     if( new_msg == true){
                         std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-                        //if (write(tty_fd, p_data_in, size_data_in) == size_data_in){ // write YES
                         if (write(tty_fd, p_msg_user, size_data_in) == (ssize_t)size_data_in){ // write YES
                             new_msg = false;
                             free(p_msg_user);
                             p_msg_user = NULL;
                             cv_serial_port_send.notify_one();
-                            //printf("Msg Send\n"); // DEBUG
 
                         }
                         else{
