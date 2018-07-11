@@ -20,8 +20,12 @@
 #include <queue>                // std::queue
 #include <tuple>                // std::tuple
 
+#include "mbedtls/base64.h"
+
 #define MSG_YES '!'
 #define MSG_NO '?'
+
+#define BASE64BUFFERSIZE 500
 
 bool new_msg = false;
 
@@ -136,14 +140,18 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
                     {
                         read_msg(tty_fd, p_data_out, size_data_out);
                     }
-                    if( new_msg == true){
+                    if( new_msg == true){// Write msg
                         std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-                        if (write(tty_fd, p_msg_user, size_data_in) == (ssize_t)size_data_in){ // write YES
+                        unsigned char buffer_write[BASE64BUFFERSIZE];
+                        size_t olen;
+//p_msg_user, size_data_in
+mbedtls_base64_encode(buffer_write,BASE64BUFFERSIZE,&olen,(unsigned char *)p_msg_user,size_data_in);
+
+                        if (write(tty_fd, p_msg_user, size_data_in) == (ssize_t)size_data_in){
                             new_msg = false;
                             free(p_msg_user);
                             p_msg_user = NULL;
                             cv_serial_port_send.notify_one();
-
                         }
                         else{
                             cout << "Sending failed" << endl;

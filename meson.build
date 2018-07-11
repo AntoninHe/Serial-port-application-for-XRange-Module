@@ -20,11 +20,18 @@ libs = [
     base64_lib_sem
 ]
 
-inc = include_directories(['node_like_fct','semtechBase64']) 
+inc = include_directories(['node_like_fct',
+                            'semtechBase64']) 
+
+incBase64 = include_directories('node_like_fct/base64')
+
 
 executable('GateWay_single_channel_test', sources, 
-            link_args : '-pthread')
-
+            link_args : '-pthread',
+            include_directories : incBase64,
+            link_with : base64_lib
+            )
+'node_like_fct/base64'
 
 executable('test_node', sources_test, 
             include_directories : inc,
