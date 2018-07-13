@@ -56,10 +56,11 @@ SerialLora::~SerialLora(){
 void thread_HIM(){
     while(1){
         cout << "enter msg to be send by your lora node" << endl;
-        string user_msg;
+        //string user_msg;
+        auto user_msg = string();
         cin >> user_msg;
         user_msg = user_msg + " ";
-        int msg_size_user =  user_msg.length();
+        auto msg_size_user =  user_msg.length();
         cout << msg_size_user;
         {
             cout << msg_size_user;
@@ -71,9 +72,6 @@ void thread_HIM(){
         }
 
         //msg_queue_r.push( std::make_tuple(p_msg_return,i) );
-
-        
-
     }
 }
 
