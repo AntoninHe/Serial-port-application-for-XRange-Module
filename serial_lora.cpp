@@ -22,6 +22,7 @@
 
 #define MSG_YES '!'
 #define MSG_NO '?'
+#define MSG_END '*'
 
 #define BASE64BUFFERSIZE 500
 
@@ -64,7 +65,7 @@ void raw_mode (int fd, struct termios *old_term)
 int read_msg(int fd, char *buffer, size_t buffer_size){
     auto i=0;
     auto c=0;
-    while( c!= ' '){ 
+    while( c!= MSG_END){ 
         while(read(fd, &c, 1) < 1); // read the message
         buffer[i] = c; 
         i++;
@@ -101,7 +102,7 @@ int say_Y_N(int fd, bool new_msg){
 }
 
 int flush_with_space(int fd){
-    auto c = ' ';
+    auto c = MSG_END;
     if (write(fd, &c, 1) > 0){ 
         return 0;
     }
