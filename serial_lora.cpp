@@ -9,16 +9,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <string.h> // needed for memset
-#include <stdbool.h>
+#include <string.h>           // needed for memset
 
-
-#include <condition_variable>   // std::condition_variable
-#include <iostream>             // sdt::cout, sdt::cin, sdt::endl
-#include <list>                 // std::list
-#include <mutex>                // std::mutex, std::unique_lock
-#include <queue>                // std::queue
-#include <tuple>                // std::tuple
+#include <condition_variable> // std::condition_variable
+#include <iostream>           // sdt::cout, sdt::cin, sdt::endl
+#include <list>               // std::list
+#include <mutex>              // std::mutex, std::unique_lock
+#include <queue>              // std::queue
+#include <tuple>              // std::tuple
 
 #include "mbedtls/base64.h"
 
