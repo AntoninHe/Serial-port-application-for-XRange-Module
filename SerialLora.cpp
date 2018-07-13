@@ -60,9 +60,7 @@ void thread_HIM(){
         cin >> user_msg;
         user_msg = user_msg + " ";
         auto msg_size_user =  user_msg.length();
-        cout << msg_size_user;
         {
-            cout << msg_size_user;
             std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
             p_msg_user = (char *)malloc( (msg_size_user)*sizeof(char) );
             memcpy( (void *)p_msg_user, (void *)user_msg.c_str(), msg_size_user);
@@ -79,7 +77,7 @@ void thread_consummer(){
         done_serial_port = 0;
 
         while(!msg_queue_r.empty()){
-        cout << std::get<0>(msg_queue_r.front()) << std::get<1>(msg_queue_r.front())<< endl;
+        //cout << std::get<0>(msg_queue_r.front()) << std::get<1>(msg_queue_r.front())<< endl;
 
         testForwarder(std::get<0>(msg_queue_r.front()),std::get<1>(msg_queue_r.front()));
         msg_queue_r.pop();
