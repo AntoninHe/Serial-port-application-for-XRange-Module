@@ -125,7 +125,6 @@ int write_msg(int fd, char *buffer, size_t size_data_in){
     return -1;
 }
 
-
 int serial_exchange(const char *port, size_t size_data_in){
 
         auto p_data_in = (char *)calloc(size_data_in , sizeof(char) );
