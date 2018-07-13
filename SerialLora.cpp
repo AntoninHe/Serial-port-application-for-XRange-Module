@@ -70,8 +70,6 @@ void thread_HIM(){
             new_msg = true;
             cv_serial_port_send.wait(locker, [](){return new_msg == false;});
         }
-
-        //msg_queue_r.push( std::make_tuple(p_msg_return,i) );
     }
 }
 
