@@ -56,7 +56,6 @@ SerialLora::~SerialLora(){
 void thread_HIM(){
     while(1){
         cout << "enter msg to be send by your lora node" << endl;
-        //string user_msg;
         auto user_msg = string();
         cin >> user_msg;
         user_msg = user_msg + " ";
@@ -94,8 +93,7 @@ int SerialLora::serial_thread(){
         return -1;
 
     std::thread t1(thread_consummer);
-    std::thread t2(serial_exchange,this->port.c_str(), p_data_in, 200, p_data_out, 200);
-
+    std::thread t2(serial_exchange,this->port.c_str(), 200);
     std::thread t3(thread_HIM);
 
     t1.join();
