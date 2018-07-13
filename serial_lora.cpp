@@ -110,6 +110,24 @@ int flush_with_space(int fd){
     return -1;
 }
 
+int write_msg(int fd, char *buffer, size_t size_data_in){
+    std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
+    unsigned char buffer_write[BASE64BUFFERSIZE];
+    size_t olen;
+    //p_msg_user, size_data_in
+    mbedtls_base64_encode(buffer_write,BASE64BUFFERSIZE,&olen,(unsigned char *)p_msg_user,size_data_in);
+
+    if (write(fd, p_msg_user, size_data_in) == (ssize_t)size_data_in){
+        new_msg = false;
+        free(p_msg_user);
+        p_msg_user = NULL;
+        cv_serial_port_send.notify_one();
+        return 0;
+    }
+    return -1;
+}
+
+
 int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char *p_data_out, size_t size_data_out){
         auto tty_fd = 0;
         
@@ -138,22 +156,10 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
                     say_Y_N(tty_fd, new_msg);
                     if(c == MSG_YES)
                     {
-                        read_msg(tty_fd, p_data_out, size_data_out);
+                        read_msg(tty_fd, p_data_in, size_data_in);
                     }
                     if( new_msg == true){// Write msg
-                        std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-                        unsigned char buffer_write[BASE64BUFFERSIZE];
-                        size_t olen;
-//p_msg_user, size_data_in
-mbedtls_base64_encode(buffer_write,BASE64BUFFERSIZE,&olen,(unsigned char *)p_msg_user,size_data_in);
-
-                        if (write(tty_fd, p_msg_user, size_data_in) == (ssize_t)size_data_in){
-                            new_msg = false;
-                            free(p_msg_user);
-                            p_msg_user = NULL;
-                            cv_serial_port_send.notify_one();
-                        }
-                        else{
+                        if(write_msg(tty_fd, p_data_out, size_data_out) != 0){
                             cout << "Sending failed" << endl;
                         }
                     }
