@@ -126,7 +126,10 @@ int write_msg(int fd, char *buffer, size_t size_data_in){
 }
 
 
-int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char *p_data_out, size_t size_data_out){
+int serial_exchange(const char *port, size_t size_data_in){
+
+        auto p_data_in = (char *)calloc(size_data_in , sizeof(char) );
+
         auto tty_fd = 0;
         
 	struct termios old;
@@ -157,7 +160,7 @@ int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char
                         read_msg(tty_fd, p_data_in, size_data_in);
                     }
                     if( new_msg == true){// Write msg
-                        if(write_msg(tty_fd, p_data_out, size_data_out) != 0){
+                        if(write_msg(tty_fd, p_msg_user, msg_size_user) != 0){
                             cout << "Sending failed" << endl;
                         }
                     }
