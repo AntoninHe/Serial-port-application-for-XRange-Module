@@ -27,7 +27,7 @@
 
 #define BASE64BUFFERSIZE 500
 
-bool new_msg = false;
+auto new_msg = false;
 
 extern std::mutex mutex_serial_port_read;
 extern std::condition_variable cv_serial_port;
@@ -64,8 +64,8 @@ void raw_mode (int fd, struct termios *old_term)
 }
 
 int read_msg(int fd, char *buffer, size_t buffer_size){
-    int i=0;
-    char c=0;
+    auto i=0;
+    auto c=0;
     while( c!= ' '){ 
         while(read(fd, &c, 1) < 1); // read the message
         buffer[i] = c; 
@@ -78,7 +78,7 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
     i--; //purpose: ignore the space at the end of the buffer later
     {
         std::lock_guard<std::mutex> lk(mutex_serial_port_read);
-        char *p_msg_return = (char *)malloc( (i+1)*sizeof(char) );
+        auto *p_msg_return = (char *)malloc( (i+1)*sizeof(char) );
         memcpy( (void *)p_msg_return, (void *)buffer, i);
         msg_queue_r.push( std::make_tuple(p_msg_return,i) );
     }
@@ -88,7 +88,7 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
 }
 
 int say_Y_N(int fd, bool new_msg){
-    char r;
+    auto r = ' ';
     if(new_msg == true) {
         r = MSG_YES;
     }
@@ -103,7 +103,7 @@ int say_Y_N(int fd, bool new_msg){
 }
 
 int flush_with_space(int fd){
-    char c = ' ';
+    auto c = ' ';
     if (write(fd, &c, 1) > 0){ 
         return 0;
     }
@@ -111,11 +111,11 @@ int flush_with_space(int fd){
 }
 
 int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char *p_data_out, size_t size_data_out){
-        int tty_fd;
+        auto tty_fd = 0;
         
 	struct termios old;
 
-        char c='D';
+        auto c='D';
 
         tty_fd = open(port, O_RDWR);
 

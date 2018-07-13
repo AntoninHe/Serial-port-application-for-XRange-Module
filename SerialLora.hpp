@@ -1,9 +1,10 @@
+#ifndef SERIAL_LORA_CLASS_HPP
+#define SERIAL_LORA_CLASS_HPP
+
 #include <iostream>
 #include <string>
 #include <termios.h>
 
-#ifndef SERIAL_LORA_CLASS_HPP
-#define SERIAL_LORA_CLASS_HPP
 
 class SerialLora{
     public : 
