@@ -12,6 +12,10 @@
 #include <thread>               // std::thread
 #include <tuple>                // std::tuple
 
+#define MSG_YES '!'
+#define MSG_NO '?'
+#define MSG_END '*'
+
 using std::string;
 using std::cout;
 using std::cin;
@@ -58,8 +62,8 @@ void thread_HIM(){
         cout << "enter msg to be send by your lora node" << endl;
         auto user_msg = string();
         cin >> user_msg;
-        user_msg = user_msg + " ";
-        auto msg_size_user =  user_msg.length();
+        user_msg = user_msg + MSG_END;
+        msg_size_user =  user_msg.length();
         {
             std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
             p_msg_user = (char *)malloc( (msg_size_user)*sizeof(char) );
