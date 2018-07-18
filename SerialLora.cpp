@@ -62,7 +62,6 @@ void thread_HIM(){
         cout << "enter msg to be send by your lora node" << endl;
         auto user_msg = string();
         cin >> user_msg;
-        user_msg = user_msg + MSG_END;
         msg_size_user =  user_msg.length();
         {
             std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
@@ -106,16 +105,13 @@ int SerialLora::serial_thread(){
 }
 
 int SerialLora::send_msg(char msg[]){
-
     return -1;
 }
 
 int SerialLora::read_msg(char msg[]){
-
     return -1;
 }
 
 int SerialLora::read_msg(std::string msg){
-
     return -1;
 }

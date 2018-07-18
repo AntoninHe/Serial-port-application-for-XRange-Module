@@ -74,11 +74,11 @@ int read_msg(int fd, char *buffer, size_t buffer_size){
             break;
         }
     }
-    i--; //purpose: ignore the space at the end of the buffer later
+    i--; //purpose: ignore last char 
     {
         std::lock_guard<std::mutex> lk(mutex_serial_port_read);
         auto *p_msg_return = (char *)malloc( (i+1)*sizeof(char) );
-        memcpy( (void *)p_msg_return, (void *)buffer, i);
+        memcpy( (void * )p_msg_return, (void *)buffer, i);
         msg_queue_r.push( std::make_tuple(p_msg_return,i) );
     }
     done_serial_port = 1;
@@ -112,11 +112,10 @@ int flush_with_space(int fd){
 int write_msg(int fd, char *buffer, size_t size_data_in){
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
     unsigned char buffer_write[BASE64BUFFERSIZE];
-    size_t olen;
-    //p_msg_user, size_data_in
+    auto olen = size_t{};
     mbedtls_base64_encode(buffer_write,BASE64BUFFERSIZE,&olen,(unsigned char *)p_msg_user,size_data_in);
-
-    if (write(fd, p_msg_user, size_data_in) == (ssize_t)size_data_in){
+    buffer_write[olen++] = MSG_END;
+    if (write(fd, buffer_write, olen) == (ssize_t)olen){
         new_msg = false;
         free(p_msg_user);
         p_msg_user = NULL;
@@ -128,50 +127,48 @@ int write_msg(int fd, char *buffer, size_t size_data_in){
 
 int serial_exchange(const char *port, size_t size_data_in){
 
-        auto p_data_in = (char *)calloc(size_data_in , sizeof(char) );
+    auto p_data_in = (char *)calloc(size_data_in , sizeof(char) );
+    auto tty_fd    = 0;
+    auto c         = 'D';
+    struct termios old;
 
-        auto tty_fd = 0;
-        
-	struct termios old;
 
-        auto c='D';
+    tty_fd = open(port, O_RDWR);
 
-        tty_fd = open(port, O_RDWR);
+    if(tty_fd == -1){
+        cout << "opening failed" << endl;
+        return -1;
+    }
+    cout << "File descriptor : " << tty_fd << endl;
+    raw_mode(tty_fd, &old);
+    cout << "Pass to raw mode" << endl;
 
-        if(tty_fd == -1){
-            cout << "opening failed" << endl;
-            return -1;
-        }
-        cout << "File descriptor : " << tty_fd << endl;
-        raw_mode(tty_fd, &old);
-        cout << "Pass to raw mode" << endl;
-
-        tcflush(tty_fd, TCIFLUSH);
-        flush_with_space(tty_fd);
-        while (c!='q')
-        {
-            c=0;
-            if (read(tty_fd,&c,1) > 0 ){
-                if(c == MSG_YES || c == MSG_NO){
-                    usleep(10000);
-                    say_Y_N(tty_fd, new_msg);
-                    if(c == MSG_YES)
-                    {
-                        read_msg(tty_fd, p_data_in, size_data_in);
-                    }
-                    if( new_msg == true){// Write msg
-                        if(write_msg(tty_fd, p_msg_user, msg_size_user) != 0){
-                            cout << "Sending failed" << endl;
-                        }
-                    }
+    tcflush(tty_fd, TCIFLUSH);
+    flush_with_space(tty_fd);
+    while (1)
+    {
+        c=0;
+        if (read(tty_fd,&c,1) > 0 ){
+            if(c == MSG_YES || c == MSG_NO){
+                usleep(10000);
+                say_Y_N(tty_fd, new_msg);
+                if(c == MSG_YES)
+                {
+                    read_msg(tty_fd, p_data_in, size_data_in);
                 }
-                else{
-                    printf("yes nor no\n");
+                if( new_msg == true){// Write msg
+                    if(write_msg(tty_fd, p_msg_user, msg_size_user) != 0){
+                        cout << "Sending failed" << endl;
+                    }
                 }
             }
+            else{
+                printf("yes nor no\n");
+            }
         }
-        cout << "Close port" << endl;
-        tcsetattr(tty_fd, TCSANOW, &old);
-        close(tty_fd);
-        return 0;
+    }
+    cout << "Close port" << endl;
+    tcsetattr(tty_fd, TCSANOW, &old);
+    close(tty_fd);
+    return 0;
 }
