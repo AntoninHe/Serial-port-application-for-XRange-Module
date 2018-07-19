@@ -1,6 +1,7 @@
 #include "SerialLora.hpp"
 #include "serial_lora.hpp"
 #include "forwarder.hpp"
+#include "cpu.hpp"
 
 #include <string.h> // memcpy
 
@@ -11,6 +12,8 @@
 #include <queue>                // std::queue
 #include <thread>               // std::thread
 #include <tuple>                // std::tuple
+
+#include <chrono>
 
 #define MSG_YES '!'
 #define MSG_NO '?'
@@ -73,6 +76,29 @@ void thread_HIM(){
     }
 }
 
+void thread_Cpu_data(){
+        cout << "cpu start" << endl;
+    while(1){
+        // 100ms pause
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        cout << "sleep done" << endl;
+        auto cpuUsage =  Get_cpu();
+
+        {
+            std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
+            msg_size_user = 4;
+            auto i = 0;
+            p_msg_user = (char *)malloc( (msg_size_user)*sizeof(char) );
+            for(auto& e : cpuUsage){
+                p_msg_user[i] = e;
+                cout << e << endl;
+            }
+            new_msg = true;
+            cv_serial_port_send.wait(locker, [](){return new_msg == false;});
+        }
+    }
+}
+
 void thread_consummer(){
     while(1){
         std::unique_lock<std::mutex> locker(mutex_serial_port_read);
@@ -95,7 +121,8 @@ int SerialLora::serial_thread(){
 
     std::thread t1(thread_consummer);
     std::thread t2(serial_exchange,this->port.c_str(), 200);
-    std::thread t3(thread_HIM);
+    //std::thread t3(thread_HIM);
+    std::thread t3(thread_Cpu_data);
 
     t1.join();
     t2.join();

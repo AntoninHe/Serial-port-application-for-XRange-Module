@@ -12,7 +12,8 @@ sources = [
     'main.cpp'          ,
     'serial_lora.cpp'   ,
     'SerialLora.cpp'    ,
-    'forwarder.cpp'
+    'forwarder.cpp'     ,
+    'cpu.cpp'
 ]
 
 libs = [
