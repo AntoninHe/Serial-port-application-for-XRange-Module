@@ -9,6 +9,8 @@
  *
  *******************************************************************************/
 
+#ifndef FORWADER_HPP
+#define FORWADER_HPP
 
 typedef unsigned char byte;
 
@@ -34,5 +36,7 @@ typedef unsigned char byte;
 //void receivepacket() {
 
 void parseCommandline(int argc, char *argv[]);
-  
+
 void testForwarder(char my_msg[], unsigned char receivedbytes);
+
+#endif
