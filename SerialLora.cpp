@@ -80,18 +80,19 @@ void thread_Cpu_data(){
         cout << "cpu start" << endl;
     while(1){
         // 100ms pause
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         cout << "sleep done" << endl;
         auto cpuUsage =  Get_cpu();
 
         {
             std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-            msg_size_user = 4;
+            msg_size_user = cpuUsage.size();
             auto i = 0;
             p_msg_user = (char *)malloc( (msg_size_user)*sizeof(char) );
             for(auto& e : cpuUsage){
                 p_msg_user[i] = e;
-                cout << e << endl;
+                cout << e << " et i" << i << endl;
+                i++;
             }
             new_msg = true;
             cv_serial_port_send.wait(locker, [](){return new_msg == false;});
