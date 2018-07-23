@@ -8,15 +8,15 @@
 #ifndef SERIAL_LORA_HPP
 #define SERIAL_LORA_HPP
 
-#include <unistd.h>
-#include <termios.h>
 #include <stdbool.h>
+#include <termios.h>
+#include <unistd.h>
 
 /*
  * Name : exchange
  *
- * port_name : serial port mame 
- * data_in_size : data buffer size 
+ * port_name : serial port mame
+ * data_in_size : data buffer size
  * data_out_size : data buffer size
  * size_data_in : buffer size
  * size_data_out : buffer size
@@ -27,6 +27,7 @@
  *
  * */
 int serial_exchange(const char *port, size_t size_data_in);
-//int serial_exchange(const char *port, char *p_data_in, size_t size_data_in, char *p_data_out, size_t size_data_out);
+// int serial_exchange(const char *port, char *p_data_in, size_t size_data_in,
+// char *p_data_out, size_t size_data_out);
 
 #endif
