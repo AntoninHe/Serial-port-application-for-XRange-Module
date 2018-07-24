@@ -28,14 +28,14 @@
 
 using namespace std;
 
-//extern "C" {
+// extern "C" {
 //    #include "base64.h"
 //}
 
 #include "static_addr.h"
 
-#include <netdb.h> //hostent
 #include <arpa/inet.h>
+#include <netdb.h> //hostent
 
 typedef bool boolean;
 typedef unsigned char byte;
@@ -60,18 +60,9 @@ uint32_t cp_nb_rx_bad;
 uint32_t cp_nb_rx_nocrc;
 uint32_t cp_up_pkt_fwd;
 
-enum sf_t
-{
-    SF7 = 7,
-    SF8,
-    SF9,
-    SF10,
-    SF11,
-    SF12
-};
+enum sf_t { SF7 = 7, SF8, SF9, SF10, SF11, SF12 };
 
-enum
-{
+enum {
     EU868_F1 = 868100000, // g1 SF7-12
     EU868_F2 = 868300000, // g1 SF7-12 FSK SF7/250
     EU868_F3 = 868500000, // g1 SF7-12
@@ -100,9 +91,10 @@ float lon = 1.43590;
 int alt = 162;
 
 /* Informal status fields */
-static char platform[24] = "Single Channel Gateway";   // platform definition
-static char email[40] = "";                            // used for contact email
-static char description[64] = "Singe Channel Gateway"; // used for free form description
+static char platform[24] = "Single Channel Gateway"; // platform definition
+static char email[40] = "";                          // used for contact email
+static char description[64] =
+    "Singe Channel Gateway"; // used for free form description
 
 // define servers
 // TODO: use host names and dns
@@ -116,7 +108,7 @@ static char description[64] = "Singe Channel Gateway"; // used for free form des
 // #############################################
 std::map<std::string, std::pair<std::string, int>> serverList;
 
-#define BUFLEN 2048 //Max length of buffer
+#define BUFLEN 2048 // Max length of buffer
 
 #define PROTOCOL_VERSION 1
 #define PKT_PUSH_DATA 0
@@ -128,14 +120,12 @@ std::map<std::string, std::pair<std::string, int>> serverList;
 #define TX_BUFF_SIZE 2048
 #define STATUS_SIZE 1024
 
-void die(const char *s)
-{
+void die(const char *s) {
     perror(s);
     exit(1);
 }
 
-int hostToIp(const char *host, char *ip, const int bufflen)
-{
+int hostToIp(const char *host, char *ip, const int bufflen) {
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_in *h;
     int ret = -1;
@@ -147,8 +137,7 @@ int hostToIp(const char *host, char *ip, const int bufflen)
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    if ((ret = getaddrinfo(host, NULL, NULL, &servinfo)) != 0)
-    {
+    if ((ret = getaddrinfo(host, NULL, NULL, &servinfo)) != 0) {
         std::stringstream error;
         error << "Failed to look up server: ";
         error << host;
@@ -157,8 +146,7 @@ int hostToIp(const char *host, char *ip, const int bufflen)
         die(error.str().c_str());
     }
 
-    for (p = servinfo; p != NULL; p = p->ai_next)
-    {
+    for (p = servinfo; p != NULL; p = p->ai_next) {
         h = (struct sockaddr_in *)p->ai_addr;
         strncpy(ip, inet_ntoa(h->sin_addr), bufflen);
     }
@@ -167,19 +155,14 @@ int hostToIp(const char *host, char *ip, const int bufflen)
     return 0;
 }
 
-boolean receivePkt(char *payload)
-{
-    return true;
-}
+boolean receivePkt(char *payload) { return true; }
 
-int resolve_ip_address(const char *hostname, char *ip)
-{
+int resolve_ip_address(const char *hostname, char *ip) {
     struct hostent *he;
     struct in_addr **addr_list;
     int i;
 
-    if ((he = gethostbyname(hostname)) == NULL)
-    {
+    if ((he = gethostbyname(hostname)) == NULL) {
         // get the host info
         herror("gethostbyname");
         return 1;
@@ -187,9 +170,8 @@ int resolve_ip_address(const char *hostname, char *ip)
 
     addr_list = (struct in_addr **)he->h_addr_list;
 
-    for (i = 0; addr_list[i] != NULL; i++)
-    {
-        //Return the first one;
+    for (i = 0; addr_list[i] != NULL; i++) {
+        // Return the first one;
         strcpy(ip, inet_ntoa(*addr_list[i]));
         return 0;
     }
@@ -197,25 +179,22 @@ int resolve_ip_address(const char *hostname, char *ip)
     return 1;
 }
 
-void sendudp(char *msg, int length)
-{
+void sendudp(char *msg, int length) {
 
-    //send the update
+    // send the update
     std::map<std::string, std::pair<std::string, int>>::iterator iter;
-    for (iter = serverList.begin(); iter != serverList.end(); iter++)
-    {
+    for (iter = serverList.begin(); iter != serverList.end(); iter++) {
         cout << iter->second.second << endl;
         cout << iter->second.first << endl;
         si_other.sin_port = htons(iter->second.second);
         inet_aton(iter->second.first.c_str(), &si_other.sin_addr);
-        if (sendto(s, (char *)msg, length, 0, (struct sockaddr *)&si_other, slen) == -1)
-        {
+        if (sendto(s, (char *)msg, length, 0, (struct sockaddr *)&si_other,
+                   slen) == -1) {
             die("sendto()");
         }
     }
 }
-void sendstat()
-{
+void sendstat() {
 
     static char status_report[STATUS_SIZE]; /* status report as a JSON object */
     char stat_timestamp[24];
@@ -257,18 +236,24 @@ void sendstat()
     t = time(NULL);
     strftime(stat_timestamp, sizeof stat_timestamp, "%F %T %Z", gmtime(&t));
 
-    int j = snprintf((char *)(status_report + stat_index), STATUS_SIZE - stat_index, "{\"stat\":{\"time\":\"%s\",\"lati\":%.5f,\"long\":%.5f,\"alti\":%i,\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,\"txnb\":%u,\"pfrm\":\"%s\",\"mail\":\"%s\",\"desc\":\"%s\"}}", stat_timestamp, lat, lon, (int)alt, cp_nb_rx_rcv, cp_nb_rx_ok, cp_up_pkt_fwd, (float)0, 0, 0, platform, email, description);
+    int j = snprintf(
+        (char *)(status_report + stat_index), STATUS_SIZE - stat_index,
+        "{\"stat\":{\"time\":\"%s\",\"lati\":%.5f,\"long\":%.5f,\"alti\":%i,"
+        "\"rxnb\":%u,\"rxok\":%u,\"rxfw\":%u,\"ackr\":%.1f,\"dwnb\":%u,"
+        "\"txnb\":%u,\"pfrm\":\"%s\",\"mail\":\"%s\",\"desc\":\"%s\"}}",
+        stat_timestamp, lat, lon, (int)alt, cp_nb_rx_rcv, cp_nb_rx_ok,
+        cp_up_pkt_fwd, (float)0, 0, 0, platform, email, description);
     stat_index += j;
     status_report[stat_index] = 0; /* add string terminator, for safety */
 
-    printf("stat update: %s\n", (char *)(status_report + 12)); /* DEBUG: display JSON stat */
+    printf("stat update: %s\n",
+           (char *)(status_report + 12)); /* DEBUG: display JSON stat */
 
-    //send the update
+    // send the update
     sendudp(status_report, stat_index);
 }
 
-void receivepacket(char my_msg[], byte receivedbytes)
-{
+void receivepacket(char my_msg[], byte receivedbytes) {
 
     long int SNR;
     // int rssicorr;
@@ -286,30 +271,30 @@ void receivepacket(char my_msg[], byte receivedbytes)
 
     ///////////////////////////////////////////////////////////
 
-    //printf("Packet RSSI: %d, ",readRegister(0x1A)-rssicorr);
-    //printf("RSSI: %d, ",readRegister(0x1B)-rssicorr);
+    // printf("Packet RSSI: %d, ",readRegister(0x1A)-rssicorr);
+    // printf("RSSI: %d, ",readRegister(0x1B)-rssicorr);
     printf("SNR: %li, ", SNR);
     printf("Length: %i", (int)receivedbytes);
     printf("\n");
 
     int j;
-    //j = bin_to_b64((uint8_t *)message, receivedbytes, (char *)(b64), 341);
-    //fwrite(b64, sizeof(char), j, stdout);
+    // j = bin_to_b64((uint8_t *)message, receivedbytes, (char *)(b64), 341);
+    // fwrite(b64, sizeof(char), j, stdout);
 
     char buff_up[TX_BUFF_SIZE]; /* buffer to compose the upstream packet */
     int buff_index = 0;
 
     /* gateway <-> MAC protocol variables */
-    //static uint32_t net_mac_h; /* Most Significant Nibble, network order */
-    //static uint32_t net_mac_l; /* Least Significant Nibble, network order */
+    // static uint32_t net_mac_h; /* Most Significant Nibble, network order */
+    // static uint32_t net_mac_l; /* Least Significant Nibble, network order */
 
     /* pre-fill the data buffer with fixed fields */
     buff_up[0] = PROTOCOL_VERSION;
     buff_up[3] = PKT_PUSH_DATA;
 
     /* process some of the configuration variables */
-    //net_mac_h = htonl((uint32_t)(0xFFFFFFFF & (lgwm>>32)));
-    //net_mac_l = htonl((uint32_t)(0xFFFFFFFF &  lgwm  ));
+    // net_mac_h = htonl((uint32_t)(0xFFFFFFFF & (lgwm>>32)));
+    // net_mac_l = htonl((uint32_t)(0xFFFFFFFF &  lgwm  ));
     //*(uint32_t *)(buff_up + 4) = net_mac_h;
     //*(uint32_t *)(buff_up + 8) = net_mac_l;
 
@@ -349,17 +334,19 @@ void receivepacket(char my_msg[], byte receivedbytes)
     buff_index += 9;
     buff_up[buff_index] = '{';
     ++buff_index;
-    j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE - buff_index, "\"tmst\":%u", tmst);
+    j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE - buff_index,
+                 "\"tmst\":%u", tmst);
     buff_index += j;
-    j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE - buff_index, ",\"chan\":%1u,\"rfch\":%1u,\"freq\":%.6lf", 0, 0, (double)freq / 1000000);
+    j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE - buff_index,
+                 ",\"chan\":%1u,\"rfch\":%1u,\"freq\":%.6lf", 0, 0,
+                 (double)freq / 1000000);
     buff_index += j;
     memcpy((void *)(buff_up + buff_index), (void *)",\"stat\":1", 9);
     buff_index += 9;
     memcpy((void *)(buff_up + buff_index), (void *)",\"modu\":\"LORA\"", 14);
     buff_index += 14;
     /* Lora datarate & bandwidth, 16-19 useful chars */
-    switch (sf)
-    {
+    switch (sf) {
     case SF7:
         memcpy((void *)(buff_up + buff_index), (void *)",\"datr\":\"SF7", 12);
         buff_index += 12;
@@ -396,37 +383,36 @@ void receivepacket(char my_msg[], byte receivedbytes)
     buff_index += 13;
     //          switch((int)((modemstat & 0xE0) >> 5)) {
     //          case 1:
-    //              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/5\"", 13);
-    //              buff_index += 13;
-    //              break;
+    //              memcpy((void *)(buff_up + buff_index), (void
+    //              *)",\"codr\":\"4/5\"", 13); buff_index += 13; break;
     //          case 2:
-    //              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/6\"", 13);
-    //              buff_index += 13;
-    //              break;
+    //              memcpy((void *)(buff_up + buff_index), (void
+    //              *)",\"codr\":\"4/6\"", 13); buff_index += 13; break;
     //          case 3:
-    //              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/7\"", 13);
-    //              buff_index += 13;
-    //              break;
+    //              memcpy((void *)(buff_up + buff_index), (void
+    //              *)",\"codr\":\"4/7\"", 13); buff_index += 13; break;
     //          case 4:
-    //              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"4/8\"", 13);
-    //              buff_index += 13;
-    //              break;
+    //              memcpy((void *)(buff_up + buff_index), (void
+    //              *)",\"codr\":\"4/8\"", 13); buff_index += 13; break;
     //          default:
-    //              memcpy((void *)(buff_up + buff_index), (void *)",\"codr\":\"?\"", 13);
-    //              buff_index += 11;
+    //              memcpy((void *)(buff_up + buff_index), (void
+    //              *)",\"codr\":\"?\"", 13); buff_index += 11;
     //          }
 
     SNR = 9; // "lsnr":9
-    j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE - buff_index, ",\"lsnr\":%li", SNR);
+    j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE - buff_index,
+                 ",\"lsnr\":%li", SNR);
     buff_index += j;
     /////////////////////////////////////////////////////////////////
     // TODO
     /////////////////////////////////////////////////////////////////
 
-    //j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE-buff_index, ",\"rssi\":%d,\"size\":%u", readRegister(0x1A)-rssicorr, receivedbytes);
+    // j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE-buff_index,
+    // ",\"rssi\":%d,\"size\":%u", readRegister(0x1A)-rssicorr, receivedbytes);
 
     //"rssi":-69
-    j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE - buff_index, ",\"rssi\":%d,\"size\":%u", -69, receivedbytes);
+    j = snprintf((char *)(buff_up + buff_index), TX_BUFF_SIZE - buff_index,
+                 ",\"rssi\":%d,\"size\":%u", -69, receivedbytes);
     buff_index += j;
 
     /////////////////////////////////////////////////////////////////
@@ -442,12 +428,13 @@ void receivepacket(char my_msg[], byte receivedbytes)
 
     buff_index += receivedbytes;
 
-    //j = bin_to_b64((uint8_t *)message, receivedbytes, (char *)(buff_up + buff_index), 341);
+    // j = bin_to_b64((uint8_t *)message, receivedbytes, (char *)(buff_up +
+    // buff_index), 341);
 
     ////////////////////////////////////////////////////////////////////////
     ///                END  Message received                            ////
     ////////////////////////////////////////////////////////////////////////
-    //buff_index += j;
+    // buff_index += j;
     buff_up[buff_index] = '"';
     ++buff_index;
 
@@ -461,53 +448,47 @@ void receivepacket(char my_msg[], byte receivedbytes)
     ++buff_index;
     buff_up[buff_index] = 0; /* add string terminator, for safety */
 
-    printf("rxpk update: %s\n", (char *)(buff_up + 12)); /* DEBUG: display JSON payload */
+    printf("rxpk update: %s\n",
+           (char *)(buff_up + 12)); /* DEBUG: display JSON payload */
 
-    //send the messages
+    // send the messages
     sendudp(buff_up, buff_index);
 
     fflush(stdout);
 }
 
-void parseCommandline(int argc, char *argv[])
-{
-    for (int i = 1; i < argc; i++)
-    {
-        if (0 == strncasecmp(argv[i], "-u", 2))
-        {
+void parseCommandline(int argc, char *argv[]) {
+    for (int i = 1; i < argc; i++) {
+        if (0 == strncasecmp(argv[i], "-u", 2)) {
             char ip[INET6_ADDRSTRLEN];
             std::string server = argv[i] + 2;
             int port = DEFAULTPORT;
-            if (server.find(':') != std::string::npos)
-            {
-                std::stringstream parser(server.substr(server.find(':') + 1, std::string::npos));
+            if (server.find(':') != std::string::npos) {
+                std::stringstream parser(
+                    server.substr(server.find(':') + 1, std::string::npos));
                 parser >> port;
                 server = server.substr(0, server.find(':'));
-                if (port == 0)
-                {
+                if (port == 0) {
                     std::stringstream error;
-                    error << "Invalid server string given, cannot parse given port number: ";
+                    error << "Invalid server string given, cannot parse given "
+                             "port number: ";
                     error << parser.str();
                     die(error.str().c_str());
-                }
-                else if (port < 1024)
-                {
+                } else if (port < 1024) {
                     die("Don't use priviledged ports < 1024 for sending");
                 }
             }
             hostToIp(server.c_str(), ip, INET6_ADDRSTRLEN);
             std::string address = ip;
-            serverList.insert(std::make_pair(server, std::make_pair(address, port)));
-        }
-        else if (0 == strncasecmp(argv[i], "-sf", 3))
-        {
+            serverList.insert(
+                std::make_pair(server, std::make_pair(address, port)));
+        } else if (0 == strncasecmp(argv[i], "-sf", 3)) {
             int sFactor = 0;
             std::string sfString = argv[i] + 3;
             std::stringstream parser(sfString);
             parser >> sFactor;
 
-            switch (sFactor)
-            {
+            switch (sFactor) {
             case 7:
                 sf = SF7;
                 break;
@@ -529,60 +510,75 @@ void parseCommandline(int argc, char *argv[])
             default:
                 die("Invalid spreading factor specified, valid range is 7-12");
             }
-        }
-        else if (0 == strncasecmp(argv[i], "-f", 2))
-        {
+        } else if (0 == strncasecmp(argv[i], "-f", 2)) {
             uint32_t frequency = 0;
             std::string fString = argv[i] + 2;
             std::stringstream parser(fString);
             parser >> frequency;
 
-            if (frequency >= EU868_J4 && frequency <= EU868_F6)
-            {
-                //EUR Channels
-                if (frequency == EU868_F1 || frequency == EU868_F2 || frequency == EU868_F3 || frequency == EU868_F4 || frequency == EU868_F5 || frequency == EU868_F6 || frequency == EU868_J4 || frequency == EU868_J5 || frequency == EU868_J6)
-                {
+            if (frequency >= EU868_J4 && frequency <= EU868_F6) {
+                // EUR Channels
+                if (frequency == EU868_F1 || frequency == EU868_F2 ||
+                    frequency == EU868_F3 || frequency == EU868_F4 ||
+                    frequency == EU868_F5 || frequency == EU868_F6 ||
+                    frequency == EU868_J4 || frequency == EU868_J5 ||
+                    frequency == EU868_J6) {
                     freq = frequency;
-                }
-                else
-                {
+                } else {
                     std::stringstream error;
                     error << "Invalid EU channel specified: ";
                     error << frequency;
                     error << "Hz";
                     die(error.str().c_str());
                 }
-            }
-            else if (frequency >= 902000000 && frequency <= 928000000)
-            {
-                //Todo valid channels in the US
+            } else if (frequency >= 902000000 && frequency <= 928000000) {
+                // Todo valid channels in the US
                 freq = frequency;
-            }
-            else
-            {
+            } else {
                 std::stringstream error;
                 error << "The specified frequency ";
                 error << frequency;
                 error << "Hz is outside of any valid ISM band.";
                 die(error.str().c_str());
             }
-        }
-        else
-        {
-            std::cout << "Usage: " << argv[0] << " [-uSERVERNAMEORIP[:PORT]] [-sf(7-12)] [-fFREQUENCYHZ]" << std::endl;
-            std::cout << "   Example: " << argv[0] << " -ucroft.thethings.girovito.nl" << std::endl;
-            std::cout << "   Example: " << argv[0] << " -ucroft.thethings.girovito.nl:1700" << std::endl;
-            std::cout << "   Example: " << argv[0] << " -u192.168.0.111 -sf8 -f868100000" << std::endl;
-            std::cout << "   Multiple servers can be supplied with multiple -u parameters." << std::endl;
-            std::cout << "   When no server is supplied, the default server is used (" << DEFAULTSERVER << ")." << std::endl;
-            std::cout << "   When no port is supplied, the default port is used (" << DEFAULTPORT << ")." << std::endl;
-            std::cout << "   Spreading factor can be specified using -sf7 to -sf12 (default value is SF7)" << std::endl;
-            std::cout << "   Listening frequency can be specified using -fFREQUENCY in Hz. (default 868100000)" << std::endl;
-            std::cout << "   European frequencies are checked for a valid Lora channel, valid Frequencies are: " << std::endl;
-            std::cout << "     868100000Hz, 868300000Hz, 868500000Hz," << std::endl;
-            std::cout << "     868850000Hz, 869050000Hz, 869525000Hz," << std::endl;
-            std::cout << "     864100000Hz, 864300000Hz, 864500000Hz" << std::endl;
-            std::cout << "   The 900MHz Range (902-928MHz) is currently not validated." << std::endl
+        } else {
+            std::cout
+                << "Usage: " << argv[0]
+                << " [-uSERVERNAMEORIP[:PORT]] [-sf(7-12)] [-fFREQUENCYHZ]"
+                << std::endl;
+            std::cout << "   Example: " << argv[0]
+                      << " -ucroft.thethings.girovito.nl" << std::endl;
+            std::cout << "   Example: " << argv[0]
+                      << " -ucroft.thethings.girovito.nl:1700" << std::endl;
+            std::cout << "   Example: " << argv[0]
+                      << " -u192.168.0.111 -sf8 -f868100000" << std::endl;
+            std::cout << "   Multiple servers can be supplied with multiple -u "
+                         "parameters."
+                      << std::endl;
+            std::cout
+                << "   When no server is supplied, the default server is used ("
+                << DEFAULTSERVER << ")." << std::endl;
+            std::cout
+                << "   When no port is supplied, the default port is used ("
+                << DEFAULTPORT << ")." << std::endl;
+            std::cout << "   Spreading factor can be specified using -sf7 to "
+                         "-sf12 (default value is SF7)"
+                      << std::endl;
+            std::cout << "   Listening frequency can be specified using "
+                         "-fFREQUENCY in Hz. (default 868100000)"
+                      << std::endl;
+            std::cout << "   European frequencies are checked for a valid Lora "
+                         "channel, valid Frequencies are: "
+                      << std::endl;
+            std::cout << "     868100000Hz, 868300000Hz, 868500000Hz,"
+                      << std::endl;
+            std::cout << "     868850000Hz, 869050000Hz, 869525000Hz,"
+                      << std::endl;
+            std::cout << "     864100000Hz, 864300000Hz, 864500000Hz"
+                      << std::endl;
+            std::cout << "   The 900MHz Range (902-928MHz) is currently not "
+                         "validated."
+                      << std::endl
                       << std::endl;
 
             std::stringstream error;
@@ -592,27 +588,27 @@ void parseCommandline(int argc, char *argv[])
         }
     }
 
-    if (0 == serverList.size())
-    {
-        //Add the default server, if no servers are given on the command line, to make it work as before
-        //without any parameters supplied.
+    if (0 == serverList.size()) {
+        // Add the default server, if no servers are given on the command line,
+        // to make it work as before without any parameters supplied.
         char ip[INET6_ADDRSTRLEN];
         hostToIp(DEFAULTSERVER, ip, INET6_ADDRSTRLEN);
         std::string server = DEFAULTSERVER;
         std::string address = ip;
-        serverList.insert(std::make_pair(server, std::make_pair(address, DEFAULTPORT)));
+        serverList.insert(
+            std::make_pair(server, std::make_pair(address, DEFAULTPORT)));
     }
 }
 
-void testForwarder(char my_msg[], byte receivedbytes)
-{
+void testForwarder(char my_msg[], byte receivedbytes) {
 
     ////// server name init
     char ip[INET6_ADDRSTRLEN];
     hostToIp(DEFAULTSERVER, ip, INET6_ADDRSTRLEN);
     std::string server = DEFAULTSERVER;
     std::string address = ip;
-    serverList.insert(std::make_pair(server, std::make_pair(address, DEFAULTPORT)));
+    serverList.insert(
+        std::make_pair(server, std::make_pair(address, DEFAULTPORT)));
     ////// server name init end
 
     std::stringstream desc;
@@ -621,8 +617,7 @@ void testForwarder(char my_msg[], byte receivedbytes)
     desc << "SF" << sf;
     strncpy(description, desc.str().c_str(), 64);
 
-    if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-    {
+    if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
         die("socket");
     }
     memset((char *)&si_other, 0, sizeof(si_other));
@@ -634,7 +629,7 @@ void testForwarder(char my_msg[], byte receivedbytes)
 
     printf("Listening at SF%i on %.6lf Mhz.\n", sf, (double)freq / 1000000);
 
-    //while(1) {
+    // while(1) {
 
     receivepacket(my_msg, receivedbytes);
 
@@ -648,7 +643,7 @@ void testForwarder(char my_msg[], byte receivedbytes)
     //          cp_up_pkt_fwd = 0;
     //      }
     // }
-    //return (0);
+    // return (0);
 }
 
 // int main(int argc, char *argv[] ) {
@@ -688,7 +683,9 @@ void testForwarder(char my_msg[], byte receivedbytes)
 //     std::map<std::string, std::pair<std::string, int> >::iterator iter;
 //     for(iter = serverList.begin(); iter != serverList.end(); iter++)
 //     {
-//         printf("Forwarding packets to: %s (%s), port: %d\n", iter->first.c_str(), iter->second.first.c_str(), iter->second.second);
+//         printf("Forwarding packets to: %s (%s), port: %d\n",
+//         iter->first.c_str(), iter->second.first.c_str(),
+//         iter->second.second);
 //     }
 //
 //     printf("------------------\n");

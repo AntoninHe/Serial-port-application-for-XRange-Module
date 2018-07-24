@@ -14,7 +14,7 @@
 
 typedef unsigned char byte;
 
-//using namespace std;
+// using namespace std;
 
 // extern "C" {
 // #include "base64.h"
@@ -23,17 +23,17 @@ typedef unsigned char byte;
 //#include<netdb.h> //hostent
 //#include<arpa/inet.h>
 
-//void die(const char *s)
+// void die(const char *s)
 
-//int hostToIp(const char *host, char *ip, const int bufflen)
+// int hostToIp(const char *host, char *ip, const int bufflen)
 
-//boolean receivePkt(char *payload)
+// boolean receivePkt(char *payload)
 
-//void sendudp(char *msg, int length) {
+// void sendudp(char *msg, int length) {
 
-//void sendstat() {
+// void sendstat() {
 
-//void receivepacket() {
+// void receivepacket() {
 
 void parseCommandline(int argc, char *argv[]);
 

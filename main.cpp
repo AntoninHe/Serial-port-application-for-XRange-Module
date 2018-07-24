@@ -1,11 +1,9 @@
 #include "SerialLora.hpp"
 #include "forwarder.hpp"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 
-    if (argc < 2)
-    {
+    if (argc < 2) {
         std::cout << "Need the path to the node serial port" << std::endl;
         return -1;
     }

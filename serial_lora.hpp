@@ -1,4 +1,4 @@
-/* 
+/*
  * author: Antonin Héréson
  * Serial port courses from :
  * http://pficheux.free.fr/articles/lmf/serial/
