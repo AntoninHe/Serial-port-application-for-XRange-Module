@@ -76,27 +76,46 @@ void thread_HIM() {
     }
 }
 
-void thread_Cpu_data() {
+// void thread_Cpu_data() {
+//     cout << "cpu start" << endl;
+//     while (1) {
+//         // 100ms pause
+//         std::this_thread::sleep_for(std::chrono::seconds(1));
+//         cout << "sleep done" << endl;
+//         auto cpuUsage = Get_cpu();
+
+//         {
+//             std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
+//             msg_size_user = cpuUsage.size();
+//             auto i = 0;
+//             p_msg_user = (char *)malloc((msg_size_user) * sizeof(char));
+//             for (auto &e : cpuUsage) {
+//                 p_msg_user[i] = e;
+//                 cout << e << " et i" << i << endl;
+//                 i++;
+//             }
+//             new_msg = true;
+//             cv_serial_port_send.wait(locker, []() { return new_msg == false;
+//             });
+//         }
+//     }
+// }
+
+void thread_Cpu_data_2() {
     cout << "cpu start" << endl;
+    const auto size_buffer = 200;
     while (1) {
-        // 100ms pause
         std::this_thread::sleep_for(std::chrono::seconds(1));
         cout << "sleep done" << endl;
         auto cpuUsage = Get_cpu();
-
-        {
-            std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-            msg_size_user = cpuUsage.size();
-            auto i = 0;
-            p_msg_user = (char *)malloc((msg_size_user) * sizeof(char));
-            for (auto &e : cpuUsage) {
-                p_msg_user[i] = e;
-                cout << e << " et i" << i << endl;
-                i++;
-            }
-            new_msg = true;
-            cv_serial_port_send.wait(locker, []() { return new_msg == false; });
+        std::unique_ptr<char[]> p_msg(new char[size_buffer]);
+        auto i = 0;
+        for (auto &e : cpuUsage) {
+            p_msg[i] = e;
+            i++;
         }
+        //auto msg_size_user = cpuUsage.size();
+        write_serial_Lora(std::move(p_msg), cpuUsage.size());
     }
 }
 
@@ -121,11 +140,10 @@ int SerialLora::serial_thread() {
 
     if (p_data_in == NULL || p_data_out == NULL)
         return -1;
-
     std::thread t1(thread_consummer);
     std::thread t2(serial_exchange, this->port.c_str(), 200);
     // std::thread t3(thread_HIM);
-    std::thread t3(thread_Cpu_data);
+    std::thread t3(thread_Cpu_data_2);
 
     t1.join();
     t2.join();
