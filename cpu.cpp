@@ -52,7 +52,7 @@ std::vector<int> Get_cpu() {
     // snapshot 2
     ReadStatsCPU(entries2);
 
-    PrintStats(entries1, entries2);
+    // PrintStats(entries1, entries2);
     auto cpuUsage = Cpu_usage(entries1, entries2);
 
     return Cpu_usage(entries1, entries2);
