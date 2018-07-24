@@ -119,7 +119,7 @@ void write_serial_Lora(std::unique_ptr<char[]> p_msg, int msg_size) {
     cv_serial_port_send.wait(locker, []() { return new_msg == false; });
 }
 
-int write_msg_2(int fd, char *buffer, size_t size_data_in) {
+int write_msg(int fd, char *buffer, size_t size_data_in) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
     unsigned char buffer_write[BASE64BUFFERSIZE];
     auto olen = size_t{};
@@ -180,7 +180,7 @@ int serial_exchange(const char *port, size_t size_data_in) {
                     read_msg(tty_fd, p_data_in, size_data_in);
                 }
                 if (new_msg == true) { // Write msg
-                    if (write_msg_2(tty_fd, p_msg_user, msg_size_user) != 0) {
+                    if (write_msg(tty_fd, p_msg_user, msg_size_user) != 0) {
                         cout << "Sending failed" << endl;
                     }
                 }

@@ -101,7 +101,7 @@ void thread_HIM() {
 //     }
 // }
 
-void thread_Cpu_data_2() {
+void thread_Cpu_data() {
     cout << "cpu start" << endl;
     const auto size_buffer = 200;
     while (1) {
@@ -143,7 +143,7 @@ int SerialLora::serial_thread() {
     std::thread t1(thread_consummer);
     std::thread t2(serial_exchange, this->port.c_str(), 200);
     // std::thread t3(thread_HIM);
-    std::thread t3(thread_Cpu_data_2);
+    std::thread t3(thread_Cpu_data);
 
     t1.join();
     t2.join();
