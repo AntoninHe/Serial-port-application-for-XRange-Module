@@ -11,6 +11,8 @@
 #include <stdbool.h>
 #include <termios.h>
 #include <unistd.h>
+//#include <iosfwd>
+#include <memory>
 
 /*
  * Name : exchange
@@ -30,4 +32,5 @@ int serial_exchange(const char *port, size_t size_data_in);
 // int serial_exchange(const char *port, char *p_data_in, size_t size_data_in,
 // char *p_data_out, size_t size_data_out);
 
+void write_serial_Lora(std::unique_ptr<char[]> p_msg, int msg_size);
 #endif
