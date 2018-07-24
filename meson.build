@@ -1,4 +1,4 @@
-project('Serial Lora Lib', 'c', 'cpp')
+project('Serial Lora Lib', 'c', 'cpp',default_options : ['cpp_std=c++11'])
 
 subdir('node_like_fct')
 subdir('semtechBase64')
