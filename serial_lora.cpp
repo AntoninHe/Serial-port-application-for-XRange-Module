@@ -78,7 +78,6 @@ int read_msg(int fd, int buffer_size) {
     auto c = 0;
     my_buffer_R = SerialBuffer(buffer_size);
     std::lock_guard<std::mutex> lk(mutex_serial_port_read);
-
     while (1) {
         while (read(fd, &c, 1) < 1)
             ; // read the message
@@ -91,7 +90,6 @@ int read_msg(int fd, int buffer_size) {
             break;
         }
     }
-    cout << "finish" << my_buffer_R.msg.get() << endl;
     done_serial_port = true;
     cv_serial_port.notify_one();
     return my_buffer_R.size;
