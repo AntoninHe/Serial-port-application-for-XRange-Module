@@ -14,10 +14,10 @@
 #include <condition_variable> // std::condition_variable
 #include <iostream>           // sdt::cout, sdt::cin, sdt::endl
 #include <list>               // std::list
-#include <mutex>              // std::mutex, std::unique_lock
-#include <queue>              // std::queue
-#include <tuple>              // std::tuple
 #include <memory>
+#include <mutex> // std::mutex, std::unique_lock
+#include <queue> // std::queue
+#include <tuple> // std::tuple
 
 #include "mbedtls/base64.h"
 #include "serial_lora.hpp"
@@ -171,7 +171,7 @@ int serial_exchange(const char *port, int size_data_in = SIZE_MAX_BUFER) {
                 usleep(10000);
                 say_Y_N(tty_fd, new_msg);
                 if (c == MSG_YES) {
-                    read_msg(tty_fd,size_data_in);
+                    read_msg(tty_fd, size_data_in);
                 }
                 if (new_msg == true) { // Write msg
                     if (write_msg(tty_fd) != 0) {
