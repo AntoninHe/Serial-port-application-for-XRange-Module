@@ -11,11 +11,9 @@ using std::endl;
 using std::string;
 
 void thread_Cpu_data() {
-    cout << "cpu start" << endl;
     const auto size_buffer = 200;
     while (1) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        cout << "sleep done" << endl;
         auto cpuUsage = Get_cpu();
         auto my_buff = SerialBuffer(size_buffer);
         for (auto &e : cpuUsage) {
@@ -46,7 +44,6 @@ int main(int argc, char *argv[]) {
     std::thread t1(thread_consummer);
     std::thread t2(thread_Cpu_data);
     std::thread t3(serial_exchange, argv[1], 200);
-    // std::thread t3(thread_HIM);
 
     t1.join();
     t2.join();
