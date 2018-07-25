@@ -114,9 +114,3 @@ int SerialLora::serial_thread() {
 
     return 0;
 }
-
-int SerialLora::send_msg(char msg[]) { return -1; }
-
-int SerialLora::read_msg(char msg[]) { return -1; }
-
-int SerialLora::read_msg(std::string msg) { return -1; }

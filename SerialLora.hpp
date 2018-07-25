@@ -9,9 +9,6 @@ class SerialLora {
   public:
     SerialLora(const std::string port);
     ~SerialLora();
-    int send_msg(char msg[]);
-    int read_msg(char msg[]);
-    int read_msg(std::string msg);
     int serial_thread(); // to move to private
 
   private:
