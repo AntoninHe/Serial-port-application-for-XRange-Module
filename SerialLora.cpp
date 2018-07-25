@@ -95,7 +95,7 @@ void thread_Cpu_data() {
 void thread_consummer() {
     while (1) {
         auto my_buffer = read_serial_Lora();
-        testForwarder(my_buffer.msg.get(), my_buffer.size);
+        forwarder(my_buffer.msg.get(), my_buffer.size);
     }
 }
 

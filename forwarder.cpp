@@ -600,7 +600,7 @@ void parseCommandline(int argc, char *argv[]) {
     }
 }
 
-void testForwarder(char my_msg[], int receivedbytes) {
+void forwarder(char my_msg[], int receivedbytes) {
 
     ////// server name init
     char ip[INET6_ADDRSTRLEN];
