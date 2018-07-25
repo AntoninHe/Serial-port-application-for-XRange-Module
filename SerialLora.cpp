@@ -5,13 +5,9 @@
 
 #include <string.h> // memcpy
 
-#include <condition_variable> // std::condition_variable
 #include <iostream>           // sdt::cout, sdt::cin, sdt::endl
 #include <list>               // std::list
-#include <mutex>              // std::mutex, std::unique_lock
-#include <queue>              // std::queue
 #include <thread>             // std::thread
-#include <tuple>              // std::tuple
 
 #include <chrono>
 
