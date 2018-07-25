@@ -253,7 +253,7 @@ void sendstat() {
     sendudp(status_report, stat_index);
 }
 
-void receivepacket(char my_msg[], byte receivedbytes) {
+void receivepacket(char my_msg[], int receivedbytes) {
 
     long int SNR;
     // int rssicorr;
@@ -600,7 +600,7 @@ void parseCommandline(int argc, char *argv[]) {
     }
 }
 
-void testForwarder(char my_msg[], byte receivedbytes) {
+void testForwarder(char my_msg[], int receivedbytes) {
 
     ////// server name init
     char ip[INET6_ADDRSTRLEN];

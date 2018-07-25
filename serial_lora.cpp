@@ -22,9 +22,9 @@
 #include "mbedtls/base64.h"
 #include "serial_lora.hpp"
 
-#define MSG_YES '!'
-#define MSG_NO '?'
-#define MSG_END '*'
+const char MSG_YES = '!';
+const char MSG_NO = '?';
+const char MSG_END = '*';
 
 #define BASE64BUFFERSIZE 500
 
@@ -47,6 +47,10 @@ using std::cin;
 using std::cout;
 using std::endl;
 
+SerialBuffer my_buffer_W = SerialBuffer(0);
+SerialBuffer my_buffer_R = SerialBuffer(0);
+const int SIZE_MAX_BUFER = 200;
+
 SerialBuffer::SerialBuffer(int size_msg) {
     this->msg = std::unique_ptr<char[]>(new char[size_msg]);
 }
@@ -67,29 +71,34 @@ void raw_mode(int fd, struct termios *old_term) {
         cout << "Error set attr" << endl;
 }
 
+SerialBuffer read_serial_Lora() {
+    std::unique_lock<std::mutex> locker(mutex_serial_port_read);
+    cv_serial_port.wait(locker, []() { return done_serial_port == 1; });
+    done_serial_port = 0;
+    return std::move(my_buffer_R);
+}
+
 int read_msg(int fd, char *buffer, size_t buffer_size) {
-    auto i = 0;
     auto c = 0;
-    while (c != MSG_END) {
+    my_buffer_R = SerialBuffer(SIZE_MAX_BUFER);
+    std::lock_guard<std::mutex> lk(mutex_serial_port_read);
+
+    while (1) {
         while (read(fd, &c, 1) < 1)
             ; // read the message
-        buffer[i] = c;
-        i++;
-        if ((size_t)i + 2 > buffer_size) {
+        if (c == MSG_END)
+            break; // avoid copy MSG_END cara
+        my_buffer_R.msg[my_buffer_R.size] = c;
+        my_buffer_R.size++;
+        if (my_buffer_R.size >= SIZE_MAX_BUFER) {
             cout << "Error read msg overflow" << endl;
             break;
         }
     }
-    i--; // purpose: ignore last char
-    {
-        std::lock_guard<std::mutex> lk(mutex_serial_port_read);
-        auto *p_msg_return = (char *)malloc((i + 1) * sizeof(char));
-        memcpy((void *)p_msg_return, (void *)buffer, i);
-        msg_queue_r.push(std::make_tuple(p_msg_return, i));
-    }
+    cout << "finish" << my_buffer_R.msg.get() << endl;
     done_serial_port = 1;
     cv_serial_port.notify_one();
-    return i;
+    return my_buffer_R.size;
 }
 
 int say_Y_N(int fd, bool new_msg) {
@@ -114,11 +123,9 @@ int flush_with_space(int fd) {
     return -1;
 }
 
-SerialBuffer my_buffer = SerialBuffer(0);
-
 void write_serial_Lora(SerialBuffer &buff) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-    my_buffer = std::move(buff);
+    my_buffer_W = std::move(buff);
     new_msg = true;
     cv_serial_port_send.wait(locker, []() { return new_msg == false; });
 }
@@ -128,7 +135,8 @@ int write_msg(int fd, char *buffer, size_t size_data_in) {
     unsigned char buffer_write[BASE64BUFFERSIZE];
     auto olen = size_t{};
     mbedtls_base64_encode(buffer_write, BASE64BUFFERSIZE, &olen,
-                          (unsigned char *)my_buffer.msg.get(), my_buffer.size);
+                          (unsigned char *)my_buffer_W.msg.get(),
+                          my_buffer_W.size);
     buffer_write[olen++] = MSG_END;
     if (write(fd, buffer_write, olen) == (ssize_t)olen) {
         new_msg = false;
