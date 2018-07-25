@@ -60,21 +60,21 @@ SerialLora::~SerialLora() {
         free(p_data_in);
 }
 
-void thread_HIM() {
-    while (1) {
-        cout << "enter msg to be send by your lora node" << endl;
-        auto user_msg = string();
-        cin >> user_msg;
-        msg_size_user = user_msg.length();
-        {
-            std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-            p_msg_user = (char *)malloc((msg_size_user) * sizeof(char));
-            memcpy((void *)p_msg_user, (void *)user_msg.c_str(), msg_size_user);
-            new_msg = true;
-            cv_serial_port_send.wait(locker, []() { return new_msg == false; });
-        }
-    }
-}
+// void thread_HIM() { need to update this with to new function
+//     while (1) {
+//         cout << "enter msg to be send by your lora node" << endl;
+//         auto user_msg = string();
+//         cin >> user_msg;
+//         msg_size_user = user_msg.length();
+//         {
+//             std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
+//             p_msg_user = (char *)malloc((msg_size_user) * sizeof(char));
+//             memcpy((void *)p_msg_user, (void *)user_msg.c_str(),
+//             msg_size_user); new_msg = true; cv_serial_port_send.wait(locker,
+//             []() { return new_msg == false; });
+//         }
+//     }
+// }
 
 // void thread_Cpu_data() {
 //     cout << "cpu start" << endl;
@@ -86,7 +86,7 @@ void thread_HIM() {
 
 //         {
 //             std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-//             msg_size_user = cpuUsage.size();
+//             msg_size_usee = cpuUsage.size();
 //             auto i = 0;
 //             p_msg_user = (char *)malloc((msg_size_user) * sizeof(char));
 //             for (auto &e : cpuUsage) {
@@ -108,14 +108,12 @@ void thread_Cpu_data() {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         cout << "sleep done" << endl;
         auto cpuUsage = Get_cpu();
-        std::unique_ptr<char[]> p_msg(new char[size_buffer]);
-        auto i = 0;
+        auto my_buff = SerialBuffer(size_buffer);
         for (auto &e : cpuUsage) {
-            p_msg[i] = e;
-            i++;
+            my_buff.msg[my_buff.size] = e;
+            my_buff.size++;
         }
-        //auto msg_size_user = cpuUsage.size();
-        write_serial_Lora(std::move(p_msg), cpuUsage.size());
+        write_serial_Lora(my_buff);
     }
 }
 
@@ -135,6 +133,9 @@ void thread_consummer() {
         }
     }
 }
+
+// std::unique_ptr<char[]> p_msg, int msg_size
+void read_serial_Lora();
 
 int SerialLora::serial_thread() {
 

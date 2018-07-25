@@ -17,8 +17,10 @@
 #include <mutex>              // std::mutex, std::unique_lock
 #include <queue>              // std::queue
 #include <tuple>              // std::tuple
+#include <memory>
 
 #include "mbedtls/base64.h"
+#include "serial_lora.hpp"
 
 #define MSG_YES '!'
 #define MSG_NO '?'
@@ -44,6 +46,10 @@ extern std::queue<std::tuple<char *, int>> msg_queue_s;
 using std::cin;
 using std::cout;
 using std::endl;
+
+SerialBuffer::SerialBuffer(int size_msg) {
+    this->msg = std::unique_ptr<char[]>(new char[size_msg]);
+}
 
 void raw_mode(int fd, struct termios *old_term) {
     struct termios term;
@@ -108,13 +114,11 @@ int flush_with_space(int fd) {
     return -1;
 }
 
-std::unique_ptr<char[]> p_message;
-int size_message = 0;
+SerialBuffer my_buffer = SerialBuffer(0);
 
-void write_serial_Lora(std::unique_ptr<char[]> p_msg, int msg_size) {
+void write_serial_Lora(SerialBuffer &buff) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-    p_message = std::move(p_msg);
-    size_message = msg_size;
+    my_buffer = std::move(buff);
     new_msg = true;
     cv_serial_port_send.wait(locker, []() { return new_msg == false; });
 }
@@ -124,7 +128,7 @@ int write_msg(int fd, char *buffer, size_t size_data_in) {
     unsigned char buffer_write[BASE64BUFFERSIZE];
     auto olen = size_t{};
     mbedtls_base64_encode(buffer_write, BASE64BUFFERSIZE, &olen,
-                          (unsigned char *)p_message.get(), size_message);
+                          (unsigned char *)my_buffer.msg.get(), my_buffer.size);
     buffer_write[olen++] = MSG_END;
     if (write(fd, buffer_write, olen) == (ssize_t)olen) {
         new_msg = false;
@@ -133,23 +137,6 @@ int write_msg(int fd, char *buffer, size_t size_data_in) {
     }
     return -1;
 }
-
-// int write_msg(int fd, char *buffer, size_t size_data_in) {
-//     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-//     unsigned char buffer_write[BASE64BUFFERSIZE];
-//     auto olen = size_t{};
-//     mbedtls_base64_encode(buffer_write, BASE64BUFFERSIZE, &olen,
-//                           (unsigned char *)p_msg_user, size_data_in);
-//     buffer_write[olen++] = MSG_END;
-//     if (write(fd, buffer_write, olen) == (ssize_t)olen) {
-//         new_msg = false;
-//         free(p_msg_user);
-//         p_msg_user = NULL;
-//         cv_serial_port_send.notify_one();
-//         return 0;
-//     }
-//     return -1;
-// }
 
 int serial_exchange(const char *port, size_t size_data_in) {
 
