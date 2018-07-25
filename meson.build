@@ -11,7 +11,6 @@ sources_test = [
 sources = [
     'main.cpp'          ,
     'serial_lora.cpp'   ,
-    'SerialLora.cpp'    ,
     'forwarder.cpp'     ,
     'cpu.cpp'
 ]
