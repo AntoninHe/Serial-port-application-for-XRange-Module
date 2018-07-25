@@ -37,10 +37,7 @@ using namespace std;
 #include <arpa/inet.h>
 #include <netdb.h> //hostent
 
-typedef bool boolean;
-typedef unsigned char byte;
-
-byte currentMode = 0x81;
+auto currentMode = 0x81;
 
 char message[256];
 char b64[256];
@@ -48,7 +45,7 @@ char b64[256];
 bool sx1272 = true;
 int maxMessages = 10;
 
-byte modemstat;
+auto modemstat = 0x00;
 
 struct sockaddr_in si_other;
 int s, slen = sizeof(si_other);
@@ -155,7 +152,7 @@ int hostToIp(const char *host, char *ip, const int bufflen) {
     return 0;
 }
 
-boolean receivePkt(char *payload) { return true; }
+bool receivePkt(char *payload) { return true; }
 
 int resolve_ip_address(const char *hostname, char *ip) {
     struct hostent *he;
