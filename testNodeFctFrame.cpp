@@ -41,7 +41,7 @@ int main() {
                           LoRaBridgeToGatewayBufferPktLen);
     cout << data_out << endl;
 
-    testForwarder((char *)data_out, size_data_out);
+    forwarder((char *)data_out, size_data_out);
 
     // int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
 

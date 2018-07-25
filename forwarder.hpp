@@ -37,6 +37,6 @@ typedef unsigned char byte;
 
 void parseCommandline(int argc, char *argv[]);
 
-void testForwarder(char my_msg[], int receivedbytes);
+void forwarder(char my_msg[], int receivedbytes);
 
 #endif
