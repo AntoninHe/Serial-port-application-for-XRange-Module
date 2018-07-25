@@ -35,7 +35,7 @@ class SerialBuffer {
  *
  * */
 
-int serial_exchange(const char *port, size_t size_data_in);
+int serial_exchange(const char *port, int size_data_in);
 // int serial_exchange(const char *port, char *p_data_in, size_t size_data_in,
 // char *p_data_out, size_t size_data_out);
 
