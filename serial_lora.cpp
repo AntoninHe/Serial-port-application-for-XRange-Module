@@ -37,7 +37,7 @@ auto done_serial_port = false;
 /////////////////////////////////////////////////
 
 /////////////////////////////////////////////////
-std::mutex mu / tex_serial_port_read_send;
+std::mutex mutex_serial_port_read_send;
 std::condition_variable cv_serial_port_send;
 SerialBuffer my_buffer_W = SerialBuffer(0);
 auto new_msg = false;
