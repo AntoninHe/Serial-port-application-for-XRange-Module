@@ -78,9 +78,9 @@ SerialBuffer read_serial_Lora() {
     return std::move(my_buffer_R);
 }
 
-int read_msg(int fd, char *buffer, size_t buffer_size) {
+int read_msg(int fd, int buffer_size = SIZE_MAX_BUFER) {
     auto c = 0;
-    my_buffer_R = SerialBuffer(SIZE_MAX_BUFER);
+    my_buffer_R = SerialBuffer(buffer_size);
     std::lock_guard<std::mutex> lk(mutex_serial_port_read);
 
     while (1) {
@@ -90,7 +90,7 @@ int read_msg(int fd, char *buffer, size_t buffer_size) {
             break; // avoid copy MSG_END cara
         my_buffer_R.msg[my_buffer_R.size] = c;
         my_buffer_R.size++;
-        if (my_buffer_R.size >= SIZE_MAX_BUFER) {
+        if (my_buffer_R.size >= buffer_size) {
             cout << "Error read msg overflow" << endl;
             break;
         }
@@ -130,7 +130,7 @@ void write_serial_Lora(SerialBuffer &buff) {
     cv_serial_port_send.wait(locker, []() { return new_msg == false; });
 }
 
-int write_msg(int fd, char *buffer, size_t size_data_in) {
+int write_msg(int fd) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
     unsigned char buffer_write[BASE64BUFFERSIZE];
     auto olen = size_t{};
@@ -172,10 +172,10 @@ int serial_exchange(const char *port, size_t size_data_in) {
                 usleep(10000);
                 say_Y_N(tty_fd, new_msg);
                 if (c == MSG_YES) {
-                    read_msg(tty_fd, p_data_in, size_data_in);
+                    read_msg(tty_fd);
                 }
                 if (new_msg == true) { // Write msg
-                    if (write_msg(tty_fd, p_msg_user, msg_size_user) != 0) {
+                    if (write_msg(tty_fd) != 0) {
                         cout << "Sending failed" << endl;
                     }
                 }
