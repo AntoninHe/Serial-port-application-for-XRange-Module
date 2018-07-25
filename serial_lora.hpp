@@ -8,11 +8,17 @@
 #ifndef SERIAL_LORA_HPP
 #define SERIAL_LORA_HPP
 
+#include <memory>
 #include <stdbool.h>
 #include <termios.h>
 #include <unistd.h>
-//#include <iosfwd>
-#include <memory>
+
+class SerialBuffer {
+  public:
+    int size = 0;
+    std::unique_ptr<char[]> msg;
+    SerialBuffer(int size_msg);
+};
 
 /*
  * Name : exchange
@@ -28,9 +34,11 @@
  *              -2 if tranmission error
  *
  * */
+
 int serial_exchange(const char *port, size_t size_data_in);
 // int serial_exchange(const char *port, char *p_data_in, size_t size_data_in,
 // char *p_data_out, size_t size_data_out);
 
 void write_serial_Lora(std::unique_ptr<char[]> p_msg, int msg_size);
+void write_serial_Lora(SerialBuffer &buff);
 #endif
