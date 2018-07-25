@@ -78,7 +78,7 @@ SerialBuffer read_serial_Lora() {
     return std::move(my_buffer_R);
 }
 
-int read_msg(int fd, int buffer_size = SIZE_MAX_BUFER) {
+int read_msg(int fd, int buffer_size) {
     auto c = 0;
     my_buffer_R = SerialBuffer(buffer_size);
     std::lock_guard<std::mutex> lk(mutex_serial_port_read);
@@ -146,7 +146,7 @@ int write_msg(int fd) {
     return -1;
 }
 
-int serial_exchange(const char *port, int size_data_in) {
+int serial_exchange(const char *port, int size_data_in = SIZE_MAX_BUFER) {
 
     auto tty_fd = 0;
     auto c = 'D';
@@ -171,7 +171,7 @@ int serial_exchange(const char *port, int size_data_in) {
                 usleep(10000);
                 say_Y_N(tty_fd, new_msg);
                 if (c == MSG_YES) {
-                    read_msg(tty_fd);
+                    read_msg(tty_fd,size_data_in);
                 }
                 if (new_msg == true) { // Write msg
                     if (write_msg(tty_fd) != 0) {
