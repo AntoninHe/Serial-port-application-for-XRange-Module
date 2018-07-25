@@ -69,7 +69,7 @@ SerialLora::~SerialLora() {
 //         {
 //             std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
 //             p_msg_user = (char *)malloc((msg_size_user) * sizeof(char));
-
+//             memcpy((void *)p_msg_user, (void *)user_msg.c_str(),
 //             msg_size_user); new_msg = true; cv_serial_port_send.wait(locker,
 //             []() { return new_msg == false; });
 //         }
@@ -94,23 +94,10 @@ void thread_Cpu_data() {
 
 void thread_consummer() {
     while (1) {
-        std::unique_lock<std::mutex> locker(mutex_serial_port_read);
-        cv_serial_port.wait(locker, []() { return done_serial_port == 1; });
-        done_serial_port = 0;
-
-        while (!msg_queue_r.empty()) {
-            // cout << std::get<0>(msg_queue_r.front()) <<
-            // std::get<1>(msg_queue_r.front())<< endl;
-
-            testForwarder(std::get<0>(msg_queue_r.front()),
-                          std::get<1>(msg_queue_r.front()));
-            msg_queue_r.pop();
-        }
+        auto my_buffer = read_serial_Lora();
+        testForwarder(my_buffer.msg.get(), my_buffer.size);
     }
 }
-
-// std::unique_ptr<char[]> p_msg, int msg_size
-void read_serial_Lora();
 
 int SerialLora::serial_thread() {
 

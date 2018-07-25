@@ -39,6 +39,6 @@ int serial_exchange(const char *port, size_t size_data_in);
 // int serial_exchange(const char *port, char *p_data_in, size_t size_data_in,
 // char *p_data_out, size_t size_data_out);
 
-void write_serial_Lora(std::unique_ptr<char[]> p_msg, int msg_size);
 void write_serial_Lora(SerialBuffer &buff);
+SerialBuffer read_serial_Lora();
 #endif
