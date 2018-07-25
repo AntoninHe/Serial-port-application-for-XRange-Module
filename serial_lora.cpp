@@ -13,11 +13,8 @@
 
 #include <condition_variable> // std::condition_variable
 #include <iostream>           // sdt::cout, sdt::cin, sdt::endl
-#include <list>               // std::list
-#include <memory>
-#include <mutex> // std::mutex, std::unique_lock
-#include <queue> // std::queue
-#include <tuple> // std::tuple
+#include <memory>             // unique_ptr
+#include <mutex>              // std::mutex, std::unique_lock
 
 #include "mbedtls/base64.h"
 #include "serial_lora.hpp"
