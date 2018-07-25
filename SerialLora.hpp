@@ -5,6 +5,10 @@
 #include <string>
 #include <termios.h>
 
+
+void thread_Cpu_data();
+void thread_consummer();
+
 class SerialLora {
   public:
     SerialLora(const std::string port);

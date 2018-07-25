@@ -3,11 +3,10 @@
 #include "forwarder.hpp"
 #include "serial_lora.hpp"
 
+#include <iostream> // sdt::cout, sdt::cin, sdt::endl
+#include <list>     // std::list
 #include <string.h> // memcpy
-
-#include <iostream>           // sdt::cout, sdt::cin, sdt::endl
-#include <list>               // std::list
-#include <thread>             // std::thread
+#include <thread>   // std::thread
 
 #include <chrono>
 
@@ -19,24 +18,6 @@ using std::cin;
 using std::cout;
 using std::endl;
 using std::string;
-
-SerialLora::SerialLora(const std::string port) { this->port = string(port); }
-
-// void thread_HIM() { need to update this with to new function
-//     while (1) {
-//         cout << "enter msg to be send by your lora node" << endl;
-//         auto user_msg = string();
-//         cin >> user_msg;
-//         msg_size_user = user_msg.length();
-//         {
-//             std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-//             p_msg_user = (char *)malloc((msg_size_user) * sizeof(char));
-//             memcpy((void *)p_msg_user, (void *)user_msg.c_str(),
-//             msg_size_user); new_msg = true; cv_serial_port_send.wait(locker,
-//             []() { return new_msg == false; });
-//         }
-//     }
-// }
 
 void thread_Cpu_data() {
     cout << "cpu start" << endl;
@@ -61,16 +42,16 @@ void thread_consummer() {
     }
 }
 
-int SerialLora::serial_thread() {
+// int SerialLora::serial_thread() {
 
-    std::thread t1(thread_consummer);
-    std::thread t2(serial_exchange, this->port.c_str(), 200);
-    // std::thread t3(thread_HIM);
-    std::thread t3(thread_Cpu_data);
+//     std::thread t1(thread_consummer);
+//     std::thread t2(serial_exchange, this->port.c_str(), 200);
+//     // std::thread t3(thread_HIM);
+//     std::thread t3(thread_Cpu_data);
 
-    t1.join();
-    t2.join();
-    t3.join();
+//     t1.join();
+//     t2.join();
+//     t3.join();
 
-    return 0;
-}
+//     return 0;
+// }
