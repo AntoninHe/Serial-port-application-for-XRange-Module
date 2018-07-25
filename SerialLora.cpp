@@ -24,41 +24,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-extern bool new_msg;
-
-/////////////////////////////////////////////////
-std::mutex mutex_serial_port_read;
-std::condition_variable cv_serial_port;
-int done_serial_port;
-
-std::queue<std::tuple<char *, int>> msg_queue_r;
-/////////////////////////////////////////////////
-
-/////////////////////////////////////////////////
-std::mutex mutex_serial_port_read_send;
-std::condition_variable cv_serial_port_send;
-
-std::queue<std::tuple<char *, int>> msg_queue_s;
-char *p_msg_user;
-int msg_size_user;
-/////////////////////////////////////////////////
-
-SerialLora::SerialLora(const std::string port) {
-
-    this->port = string(port);
-    const size_t size_buffer = 200;
-
-    p_data_in = (char *)calloc(size_buffer, sizeof(char));
-    p_data_out = (char *)calloc(size_buffer, sizeof(char));
-}
-
-SerialLora::~SerialLora() {
-    if (p_data_out != NULL)
-        free(p_data_out);
-
-    if (p_data_in != NULL)
-        free(p_data_in);
-}
+SerialLora::SerialLora(const std::string port) { this->port = string(port); }
 
 // void thread_HIM() { need to update this with to new function
 //     while (1) {
@@ -101,8 +67,6 @@ void thread_consummer() {
 
 int SerialLora::serial_thread() {
 
-    if (p_data_in == NULL || p_data_out == NULL)
-        return -1;
     std::thread t1(thread_consummer);
     std::thread t2(serial_exchange, this->port.c_str(), 200);
     // std::thread t3(thread_HIM);

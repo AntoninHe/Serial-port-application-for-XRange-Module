@@ -28,27 +28,26 @@ const char MSG_END = '*';
 
 #define BASE64BUFFERSIZE 500
 
+/////////////////////////////////////////////////
+std::mutex mutex_serial_port_read;
+std::condition_variable cv_serial_port;
+SerialBuffer my_buffer_R = SerialBuffer(0);
+auto done_serial_port = false;
+
+/////////////////////////////////////////////////
+
+/////////////////////////////////////////////////
+std::mutex mu / tex_serial_port_read_send;
+std::condition_variable cv_serial_port_send;
+SerialBuffer my_buffer_W = SerialBuffer(0);
 auto new_msg = false;
 
-extern std::mutex mutex_serial_port_read;
-extern std::condition_variable cv_serial_port;
-extern int done_serial_port;
-
-extern std::queue<std::tuple<char *, int>> msg_queue_r;
-
-extern char *p_msg_user;
-extern int msg_size_user;
-
-extern std::mutex mutex_serial_port_read_send;
-extern std::condition_variable cv_serial_port_send;
-extern std::queue<std::tuple<char *, int>> msg_queue_s;
+/////////////////////////////////////////////////
 
 using std::cin;
 using std::cout;
 using std::endl;
 
-SerialBuffer my_buffer_W = SerialBuffer(0);
-SerialBuffer my_buffer_R = SerialBuffer(0);
 const int SIZE_MAX_BUFER = 200;
 
 SerialBuffer::SerialBuffer(int size_msg) {
@@ -73,8 +72,8 @@ void raw_mode(int fd, struct termios *old_term) {
 
 SerialBuffer read_serial_Lora() {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read);
-    cv_serial_port.wait(locker, []() { return done_serial_port == 1; });
-    done_serial_port = 0;
+    cv_serial_port.wait(locker, []() { return done_serial_port == true; });
+    done_serial_port = false;
     return std::move(my_buffer_R);
 }
 
@@ -96,7 +95,7 @@ int read_msg(int fd, int buffer_size) {
         }
     }
     cout << "finish" << my_buffer_R.msg.get() << endl;
-    done_serial_port = 1;
+    done_serial_port = true;
     cv_serial_port.notify_one();
     return my_buffer_R.size;
 }
