@@ -1,5 +1,8 @@
 #include "SerialLora.hpp"
 #include "forwarder.hpp"
+#include "serial_lora.hpp"
+
+#include <thread> // std::thread
 
 int main(int argc, char *argv[]) {
 
@@ -8,16 +11,16 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    std::string port_name(argv[1]);
-    std::cout << argv[1] << std::endl;
-    std::cout << port_name << std::endl;
-
     parseCommandline(argc - 1, argv + 1);
 
-    /////    testForwarder();
+    std::thread t1(thread_consummer);
+    std::thread t2(thread_Cpu_data);
+    std::thread t3(serial_exchange, argv[1], 200);
+    // std::thread t3(thread_HIM);
 
-    SerialLora my_LoRa(port_name);
-    my_LoRa.serial_thread();
+    t1.join();
+    t2.join();
+    t3.join();
 
     return 0;
 }
