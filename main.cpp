@@ -12,7 +12,7 @@ using std::string;
 
 void thread_Cpu_data() {
     const auto size_buffer = 200;
-    while (1) {
+    while (true) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         auto cpuUsage = Get_cpu();
         auto my_buff = SerialBuffer(size_buffer);
@@ -25,7 +25,7 @@ void thread_Cpu_data() {
 }
 
 void thread_consummer() {
-    while (1) {
+    while (true) {
         auto my_buffer = read_serial_Lora();
         forwarder(my_buffer.msg.get(), my_buffer.size);
     }

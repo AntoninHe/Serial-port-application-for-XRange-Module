@@ -6,8 +6,6 @@
  */
 
 #include <fcntl.h>
-#include <stdio.h>
-#include <string.h> // needed for memset
 #include <termios.h>
 #include <unistd.h>
 
@@ -52,7 +50,7 @@ SerialBuffer::SerialBuffer(int size_msg) {
 }
 
 void raw_mode(int fd, struct termios *old_term) {
-    struct termios term;
+    struct termios term = {};
 
     tcgetattr(fd, &term);
     tcgetattr(fd, old_term);
@@ -60,16 +58,18 @@ void raw_mode(int fd, struct termios *old_term) {
     /* mode RAW */
     cfmakeraw(&term);
 
-    if (cfsetspeed(&term, B57600) != 0)
+    if (cfsetspeed(&term, B57600) != 0) {
         cout << "Error set speed" << endl;
+    }
 
-    if (tcsetattr(fd, TCSANOW, &term) != 0)
+    if (tcsetattr(fd, TCSANOW, &term) != 0) {
         cout << "Error set attr" << endl;
+    }
 }
 
 SerialBuffer read_serial_Lora() {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read);
-    cv_serial_port.wait(locker, []() { return done_serial_port == true; });
+    cv_serial_port.wait(locker, []() { return done_serial_port; });
     done_serial_port = false;
     return std::move(my_buffer_R);
 }
@@ -78,11 +78,12 @@ int read_msg(int fd, int buffer_size) {
     auto c = 0;
     my_buffer_R = SerialBuffer(buffer_size);
     std::lock_guard<std::mutex> lk(mutex_serial_port_read);
-    while (1) {
+    while (true) {
         while (read(fd, &c, 1) < 1)
             ; // read the message
-        if (c == MSG_END)
+        if (c == MSG_END) {
             break; // avoid copy MSG_END cara
+        }
         my_buffer_R.msg[my_buffer_R.size] = c;
         my_buffer_R.size++;
         if (my_buffer_R.size >= buffer_size) {
@@ -97,7 +98,7 @@ int read_msg(int fd, int buffer_size) {
 
 int say_Y_N(int fd, bool new_msg) {
     auto r = ' ';
-    if (new_msg == true) {
+    if (new_msg) {
         r = MSG_YES;
     } else {
         r = MSG_NO;
@@ -121,18 +122,29 @@ void write_serial_Lora(SerialBuffer &buff) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
     my_buffer_W = std::move(buff);
     new_msg = true;
-    cv_serial_port_send.wait(locker, []() { return new_msg == false; });
+    cv_serial_port_send.wait(locker, []() { return !new_msg; });
 }
 
 int write_msg(int fd) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-    unsigned char buffer_write[BASE64BUFFERSIZE];
     auto olen = size_t{};
-    mbedtls_base64_encode(buffer_write, BASE64BUFFERSIZE, &olen,
-                          (unsigned char *)my_buffer_W.msg.get(),
-                          my_buffer_W.size);
-    buffer_write[olen++] = MSG_END;
-    if (write(fd, buffer_write, olen) == (ssize_t)olen) {
+    int n = 0;
+    int slen = my_buffer_W.size;
+    n = slen / 3;
+    if (slen % 3 != 0) {
+        n += 1;
+    }
+    n *= 4;
+    const int buffer_max_size = n + 1;
+    SerialBuffer buffer_write_2(buffer_max_size);
+    mbedtls_base64_encode(
+        (unsigned char *)buffer_write_2.msg.get(), buffer_max_size, &olen,
+        (unsigned char *)my_buffer_W.msg.get(), my_buffer_W.size);
+    buffer_write_2.msg[olen++] = MSG_END;
+    buffer_write_2.size = olen;
+
+    if (write(fd, buffer_write_2.msg.get(), buffer_write_2.size) ==
+        (ssize_t)olen) {
         new_msg = false;
         cv_serial_port_send.notify_one();
         return 0;
@@ -140,11 +152,34 @@ int write_msg(int fd) {
     return -1;
 }
 
+// int write_msg(int fd) {
+//     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
+//     // size = base 64 worst case + MSG_END
+//     const auto buffer_max_size = 4 * my_buffer_W.size / 3 + 1 + 1;
+//     SerialBuffer buffer_write(buffer_max_size);
+//     // std::unique_ptr<unsigned char[]> buffer_write(
+//     auto olen = size_t{};
+// cout << "-----------------------" << endl;
+//     mbedtls_base64_encode((unsigned char *)buffer_write.msg.get(),
+//                           buffer_max_size, &olen,
+//                           (unsigned char *)my_buffer_W.msg.get(),
+//                           my_buffer_W.size);
+// buffer_write.size = olen;
+//     buffer_write.msg[buffer_write.size++] = MSG_END;
+//     if (write(fd, buffer_write.msg.get(), buffer_write.size) ==
+//         (ssize_t)buffer_write.size) {
+//         new_msg = false;
+//         cv_serial_port_send.notify_one();
+//         return 0;
+//     }
+//     return -1;
+// }
+
 int serial_exchange(const char *port, int size_data_in = SIZE_MAX_BUFER) {
 
     auto tty_fd = 0;
     auto c = 'D';
-    struct termios old;
+    struct termios old = {};
 
     tty_fd = open(port, O_RDWR);
 
@@ -158,7 +193,7 @@ int serial_exchange(const char *port, int size_data_in = SIZE_MAX_BUFER) {
 
     tcflush(tty_fd, TCIFLUSH);
     flush_with_space(tty_fd);
-    while (1) {
+    while (true) {
         c = 0;
         if (read(tty_fd, &c, 1) > 0) {
             if (c == MSG_YES || c == MSG_NO) {
@@ -167,13 +202,13 @@ int serial_exchange(const char *port, int size_data_in = SIZE_MAX_BUFER) {
                 if (c == MSG_YES) {
                     read_msg(tty_fd, size_data_in);
                 }
-                if (new_msg == true) { // Write msg
+                if (new_msg) { // Write msg
                     if (write_msg(tty_fd) != 0) {
                         cout << "Sending failed" << endl;
                     }
                 }
             } else {
-                printf("yes nor no\n");
+                cout << "yes nor no" << endl;
             }
         }
     }
