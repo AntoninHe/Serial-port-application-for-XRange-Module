@@ -23,10 +23,6 @@ enum CPUStates {
     S_GUEST_NICE
 };
 
-// typedef struct CPUData {
-//     std::string cpu;
-//     size_t times[NUM_CPU_STATES];
-// } CPUData;
 struct CPUData {
     std::string cpu = "";
     size_t times[NUM_CPU_STATES] = {};
@@ -93,10 +89,9 @@ void ReadStatsCPU(std::vector<CPUData> &entries) {
             }
 
             // read times
-            for(auto &e : entry.times){
-                 ss >> e;
-             }
-
+            for (auto &e : entry.times) {
+                ss >> e;
+            }
         }
     }
 }
