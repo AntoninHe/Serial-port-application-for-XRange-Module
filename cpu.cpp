@@ -8,7 +8,7 @@
 #include <thread>
 #include <vector>
 
-const int NUM_CPU_STATES = 10;
+const auto NUM_CPU_STATES = 10;
 
 enum CPUStates {
     S_USER = 0,
@@ -23,10 +23,14 @@ enum CPUStates {
     S_GUEST_NICE
 };
 
-typedef struct CPUData {
-    std::string cpu;
-    size_t times[NUM_CPU_STATES];
-} CPUData;
+// typedef struct CPUData {
+//     std::string cpu;
+//     size_t times[NUM_CPU_STATES];
+// } CPUData;
+struct CPUData {
+    std::string cpu = "";
+    size_t times[NUM_CPU_STATES] = {};
+};
 
 void ReadStatsCPU(std::vector<CPUData> &entries);
 std::vector<int> Cpu_usage(const std::vector<CPUData> &entries1,
@@ -63,13 +67,13 @@ void ReadStatsCPU(std::vector<CPUData> &entries) {
 
     std::string line;
 
-    const std::string STR_CPU("cpu");
-    const std::size_t LEN_STR_CPU = STR_CPU.size();
-    const std::string STR_TOT("tot");
+    const auto STR_CPU = std::string("cpu");
+    const auto LEN_STR_CPU = STR_CPU.size();
+    const auto STR_TOT = std::string("tot");
 
     while (std::getline(fileStat, line)) {
         // cpu stats line found
-        if (!line.compare(0, LEN_STR_CPU, STR_CPU)) {
+        if (line.compare(0, LEN_STR_CPU, STR_CPU) == 0) {
             std::istringstream ss(line);
 
             // store entry
@@ -80,15 +84,19 @@ void ReadStatsCPU(std::vector<CPUData> &entries) {
             ss >> entry.cpu;
 
             // remove "cpu" from the label when it's a processor number
-            if (entry.cpu.size() > LEN_STR_CPU)
+            if (entry.cpu.size() > LEN_STR_CPU) {
                 entry.cpu.erase(0, LEN_STR_CPU);
+            }
             // replace "cpu" with "tot" when it's total values
-            else
+            else {
                 entry.cpu = STR_TOT;
+            }
 
             // read times
-            for (int i = 0; i < NUM_CPU_STATES; ++i)
-                ss >> entry.times[i];
+            for(auto &e : entry.times){
+                 ss >> e;
+             }
+
         }
     }
 }
@@ -114,11 +122,13 @@ void PrintStats(const std::vector<CPUData> &entries1,
         std::cout.width(3);
         std::cout << e1.cpu << "] ";
 
-        const float ACTIVE_TIME =
+        const auto ACTIVE_TIME =
             static_cast<float>(GetActiveTime(e2) - GetActiveTime(e1));
-        const float IDLE_TIME =
+        // const float ACTIVE_TIME =
+        //     static_cast<float>(GetActiveTime(e2) - GetActiveTime(e1));
+        const auto IDLE_TIME =
             static_cast<float>(GetIdleTime(e2) - GetIdleTime(e1));
-        const float TOTAL_TIME = ACTIVE_TIME + IDLE_TIME;
+        const auto TOTAL_TIME = ACTIVE_TIME + IDLE_TIME;
 
         std::cout << "active: ";
         std::cout.setf(std::ios::fixed, std::ios::floatfield);
@@ -145,11 +155,11 @@ std::vector<int> Cpu_usage(const std::vector<CPUData> &entries1,
         const CPUData &e1 = entries1[i];
         const CPUData &e2 = entries2[i];
 
-        const float ACTIVE_TIME =
+        const auto ACTIVE_TIME =
             static_cast<float>(GetActiveTime(e2) - GetActiveTime(e1));
-        const float IDLE_TIME =
+        const auto IDLE_TIME =
             static_cast<float>(GetIdleTime(e2) - GetIdleTime(e1));
-        const float TOTAL_TIME = ACTIVE_TIME + IDLE_TIME;
+        const auto TOTAL_TIME = ACTIVE_TIME + IDLE_TIME;
 
         cpuUsage.push_back(100.f * ACTIVE_TIME /
                            TOTAL_TIME); // silent cast float to int
