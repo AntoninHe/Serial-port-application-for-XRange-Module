@@ -5,16 +5,19 @@
  * https://en.wikibooks.org/wiki/Serial_Programming/termios
  */
 
-#include <fcntl.h>
-#include <termios.h>
-#include <unistd.h>
-
 #include <condition_variable> // std::condition_variable
 #include <iostream>           // sdt::cout, sdt::cin, sdt::endl
 #include <memory>             // unique_ptr
 #include <mutex>              // std::mutex, std::unique_lock
 
+extern "C" {
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
+
 #include "mbedtls/base64.h"
+}
+
 #include "serial_lora.hpp"
 
 const char MSG_YES = '!';
@@ -153,29 +156,6 @@ int write_msg(int fd) {
     }
     return -1;
 }
-
-// int write_msg(int fd) {
-//     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-//     // size = base 64 worst case + MSG_END
-//     const auto buffer_max_size = 4 * my_buffer_W.size / 3 + 1 + 1;
-//     SerialBuffer buffer_write(buffer_max_size);
-//     // std::unique_ptr<unsigned char[]> buffer_write(
-//     auto olen = size_t{};
-// cout << "-----------------------" << endl;
-//     mbedtls_base64_encode((unsigned char *)buffer_write.msg.get(),
-//                           buffer_max_size, &olen,
-//                           (unsigned char *)my_buffer_W.msg.get(),
-//                           my_buffer_W.size);
-// buffer_write.size = olen;
-//     buffer_write.msg[buffer_write.size++] = MSG_END;
-//     if (write(fd, buffer_write.msg.get(), buffer_write.size) ==
-//         (ssize_t)buffer_write.size) {
-//         new_msg = false;
-//         cv_serial_port_send.notify_one();
-//         return 0;
-//     }
-//     return -1;
-// }
 
 int serial_exchange(const char *port, int size_data_in = SIZE_MAX_BUFER) {
 

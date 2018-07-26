@@ -12,29 +12,6 @@
 #ifndef FORWADER_HPP
 #define FORWADER_HPP
 
-typedef unsigned char byte;
-
-// using namespace std;
-
-// extern "C" {
-// #include "base64.h"
-// }
-
-//#include<netdb.h> //hostent
-//#include<arpa/inet.h>
-
-// void die(const char *s)
-
-// int hostToIp(const char *host, char *ip, const int bufflen)
-
-// boolean receivePkt(char *payload)
-
-// void sendudp(char *msg, int length) {
-
-// void sendstat() {
-
-// void receivepacket() {
-
 void parseCommandline(int argc, char *argv[]);
 
 void forwarder(char my_msg[], int receivedbytes);
