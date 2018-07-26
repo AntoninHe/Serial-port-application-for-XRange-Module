@@ -138,8 +138,10 @@ int write_msg(int fd) {
     const int buffer_max_size = n + 1;
     SerialBuffer buffer_write_2(buffer_max_size);
     mbedtls_base64_encode(
-        (unsigned char *)buffer_write_2.msg.get(), buffer_max_size, &olen,
-        (unsigned char *)my_buffer_W.msg.get(), my_buffer_W.size);
+        reinterpret_cast<unsigned char *>(buffer_write_2.msg.get()),
+        buffer_max_size, &olen,
+        reinterpret_cast<unsigned char *>(my_buffer_W.msg.get()),
+        my_buffer_W.size);
     buffer_write_2.msg[olen++] = MSG_END;
     buffer_write_2.size = olen;
 
