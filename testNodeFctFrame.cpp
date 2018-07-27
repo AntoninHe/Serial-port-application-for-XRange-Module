@@ -3,8 +3,7 @@
 #include "forwarder.hpp"
 
 extern "C" {
-#include "base64.h"
-#include "base64/mbedtls/base64.h"
+#include "mbedtls/base64.h"
 #include "node_like_fct.h"
 }
 
@@ -42,30 +41,4 @@ int main() {
     cout << data_out << endl;
 
     forwarder((char *)data_out, size_data_out);
-
-    // int mbedtls_base64_encode( unsigned char *dst, size_t dlen, size_t *olen,
-
-    //  {
-    //      const uint8_t size_data_out_max = 255;
-    //      size_t size_data_out = 0;
-    //      uint8_t data_out[size_data_out_max];
-
-    //      size_data_out = bin_to_b64(LoRaBridgeToGatewayBuffer,
-    //      LoRaBridgeToGatewayBufferPktLen, (char *)data_out,
-    //      (int)sizeof(data_out)); data_out[size_data_out]=0; cout << data_out
-    //      << endl;
-    //  }
-
-    // cout << size_data_out << endl;
-
-    // LoRaMacBuffer[LoRaMacBufferPktLen + 1] = '\0';
-
-    // for(int i=0; i < LoRaMacBufferPktLen; i++){
-    // for(int i=0; i < 5l0; i++){
-    //     cout << i <<< ": " << std::to_string(LoRaMacBuffer[i]) << endl;
-
-    // }
-    // cout << LoRaMacBufferPktLen << endl;
-
-    // cout << LoRaMacBuffer << endl;
 }
