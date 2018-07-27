@@ -9,6 +9,7 @@
 #include <iostream>           // sdt::cout, sdt::cin, sdt::endl
 #include <memory>             // unique_ptr
 #include <mutex>              // std::mutex, std::unique_lock
+#include <thread>             // std::thread
 
 extern "C" {
 #include <fcntl.h>
@@ -37,20 +38,43 @@ auto done_serial_port = false;
 std::mutex mutex_serial_port_read_send;
 std::condition_variable cv_serial_port_send;
 auto my_buffer_W = SerialBuffer(0);
-auto new_msg = false;
 /////////////////////////////////////////////////
+auto new_msg = false;
 
 using std::cin;
 using std::cout;
 using std::endl;
 
 const int SIZE_MAX_BUFER = 200;
-
 SerialBuffer::SerialBuffer(int size_msg) {
     this->msg = std::unique_ptr<char[]>(new char[size_msg]);
 }
 
-void raw_mode(int fd, struct termios *old_term) {
+SerialLora::SerialLora(const std::string port,
+                       const int size_data_in = SIZE_MAX_BUFER) {
+    this->size_max = size_data_in;
+
+    this->tty_fd = open(port.c_str(), O_RDWR);
+
+    if (tty_fd == -1) {
+        cout << "opening failed" << endl;
+        //////////return -1;
+    }
+    cout << "File descriptor : " << tty_fd << endl;
+    raw_mode(tty_fd, &this->old);
+
+    this->my_thread = std::thread(&SerialLora::serial_exchange, this);
+    cout << "Pass to raw mode" << endl;
+}
+
+SerialLora::~SerialLora() {
+    this->my_thread.join();
+    cout << "Close port" << endl;
+    tcsetattr(tty_fd, TCSANOW, &old);
+    close(tty_fd);
+}
+
+void SerialLora::raw_mode(int fd, struct termios *old_term) {
     struct termios term = {};
 
     tcgetattr(fd, &term);
@@ -68,14 +92,14 @@ void raw_mode(int fd, struct termios *old_term) {
     }
 }
 
-SerialBuffer read_serial_Lora() {
+SerialBuffer SerialLora::read_serial_Lora() {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read);
     cv_serial_port.wait(locker, []() { return done_serial_port; });
     done_serial_port = false;
     return std::move(my_buffer_R);
 }
 
-int read_msg(int fd, int buffer_size) {
+int SerialLora::read_msg(int fd, int buffer_size) {
     auto c = 0;
     my_buffer_R = SerialBuffer(buffer_size);
     std::lock_guard<std::mutex> lk(mutex_serial_port_read);
@@ -97,7 +121,7 @@ int read_msg(int fd, int buffer_size) {
     return my_buffer_R.size;
 }
 
-int say_Y_N(int fd, bool new_msg) {
+int SerialLora::say_Y_N(int fd, bool new_msg) {
     auto r = ' ';
     if (new_msg) {
         r = MSG_YES;
@@ -111,7 +135,7 @@ int say_Y_N(int fd, bool new_msg) {
     return 0;
 }
 
-int flush_with_space(int fd) {
+int SerialLora::flush_with_space(int fd) {
     auto c = MSG_END;
     if (write(fd, &c, 1) > 0) {
         return 0;
@@ -119,14 +143,14 @@ int flush_with_space(int fd) {
     return -1;
 }
 
-void write_serial_Lora(SerialBuffer &buff) {
+void SerialLora::write_serial_Lora(SerialBuffer &buff) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
     my_buffer_W = std::move(buff);
     new_msg = true;
     cv_serial_port_send.wait(locker, []() { return !new_msg; });
 }
 
-int write_msg(int fd) {
+int SerialLora::write_msg(int fd) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
     auto olen = size_t{};
     int n = 0;
@@ -155,22 +179,8 @@ int write_msg(int fd) {
     return -1;
 }
 
-int serial_exchange(const char *port, int size_data_in = SIZE_MAX_BUFER) {
-
-    auto tty_fd = 0;
+void SerialLora::serial_exchange() {
     auto c = 'D';
-    struct termios old = {};
-
-    tty_fd = open(port, O_RDWR);
-
-    if (tty_fd == -1) {
-        cout << "opening failed" << endl;
-        return -1;
-    }
-    cout << "File descriptor : " << tty_fd << endl;
-    raw_mode(tty_fd, &old);
-    cout << "Pass to raw mode" << endl;
-
     tcflush(tty_fd, TCIFLUSH);
     flush_with_space(tty_fd);
     while (true) {
@@ -180,7 +190,7 @@ int serial_exchange(const char *port, int size_data_in = SIZE_MAX_BUFER) {
                 usleep(10000);
                 say_Y_N(tty_fd, new_msg);
                 if (c == MSG_YES) {
-                    read_msg(tty_fd, size_data_in);
+                    read_msg(tty_fd, size_max);
                 }
                 if (new_msg) { // Write msg
                     if (write_msg(tty_fd) != 0) {
@@ -192,8 +202,5 @@ int serial_exchange(const char *port, int size_data_in = SIZE_MAX_BUFER) {
             }
         }
     }
-    cout << "Close port" << endl;
-    tcsetattr(tty_fd, TCSANOW, &old);
-    close(tty_fd);
-    return 0;
+    /////////////////// return 0;
 }
