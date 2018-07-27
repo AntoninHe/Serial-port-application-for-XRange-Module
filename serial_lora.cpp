@@ -29,17 +29,15 @@ const char MSG_END = '*';
 /////////////////////////////////////////////////
 std::mutex mutex_serial_port_read;
 std::condition_variable cv_serial_port;
-SerialBuffer my_buffer_R = SerialBuffer(0);
+auto my_buffer_R = SerialBuffer(0);
 auto done_serial_port = false;
-
 /////////////////////////////////////////////////
 
 /////////////////////////////////////////////////
 std::mutex mutex_serial_port_read_send;
 std::condition_variable cv_serial_port_send;
-SerialBuffer my_buffer_W = SerialBuffer(0);
+auto my_buffer_W = SerialBuffer(0);
 auto new_msg = false;
-
 /////////////////////////////////////////////////
 
 using std::cin;
