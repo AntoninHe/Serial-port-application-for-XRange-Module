@@ -39,4 +39,11 @@ class SerialLora {
     int write_msg(int fd);
 };
 
+class openException: public std::exception {
+    public:
+      virtual const char* what() const throw() {
+        return "Port opening failed";
+      }
+};
+
 #endif
