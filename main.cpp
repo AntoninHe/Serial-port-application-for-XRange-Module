@@ -5,6 +5,7 @@
 #include <iostream> // sdt::cout, sdt::cin, sdt::endl
 #include <thread>   // std::thread
 
+using std::cerr;
 using std::cin;
 using std::cout;
 using std::endl;
@@ -44,14 +45,17 @@ int main(int argc, char *argv[]) {
     parseCommandline(argc - 1, argv + 1);
     auto my_port = std::string(argv[1]);
 
-    auto my_serial_port =
-        std::shared_ptr<SerialLora>(new SerialLora(my_port, 200));
+    try {
+        auto my_serial_port =
+            std::shared_ptr<SerialLora>(new SerialLora(my_port, 200));
+        std::thread t1(thread_consummer, my_serial_port);
+        std::thread t2(thread_Cpu_data, my_serial_port);
 
-    std::thread t1(thread_consummer, my_serial_port);
-    std::thread t2(thread_Cpu_data, my_serial_port);
-
-    t1.join();
-    t2.join();
+        t1.join();
+        t2.join();
+    } catch (openException &e) {
+        cout << e.what() << endl;
+    }
 
     return 0;
 }
