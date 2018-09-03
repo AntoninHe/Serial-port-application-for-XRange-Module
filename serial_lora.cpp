@@ -10,6 +10,7 @@
 #include <memory>             // unique_ptr
 #include <mutex>              // std::mutex, std::unique_lock
 #include <thread>             // std::thread
+#include <exception>
 
 extern "C" {
 #include <fcntl.h>
@@ -50,6 +51,12 @@ SerialBuffer::SerialBuffer(int size_msg) {
     this->msg = std::unique_ptr<char[]>(new char[size_msg]);
 }
 
+class openException: public std::exception {
+      virtual const char* what() const throw() {
+        return "Port opening failed";
+      }
+} open_exception ;
+
 SerialLora::SerialLora(const std::string port,
                        const int size_data_in = SIZE_MAX_BUFER) {
     this->size_max = size_data_in;
@@ -57,8 +64,7 @@ SerialLora::SerialLora(const std::string port,
     this->tty_fd = open(port.c_str(), O_RDWR);
 
     if (tty_fd == -1) {
-        cout << "opening failed" << endl;
-        //////////return -1;
+        throw open_exception;
     }
     cout << "File descriptor : " << tty_fd << endl;
     raw_mode(tty_fd, &this->old);
