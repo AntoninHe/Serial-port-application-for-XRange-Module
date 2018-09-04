@@ -599,15 +599,6 @@ void parseCommandline(int argc, char *argv[]) {
 
 void forwarder(char my_msg[], int receivedbytes) {
 
-    ////// server name init
-    char ip[INET6_ADDRSTRLEN];
-    hostToIp(DEFAULTSERVER, ip, INET6_ADDRSTRLEN);
-    std::string server = DEFAULTSERVER;
-    std::string address = ip;
-    serverList.insert(
-        std::make_pair(server, std::make_pair(address, DEFAULTPORT)));
-    ////// server name init end
-
     std::stringstream desc;
     desc << "Single channel, ";
     desc << (double)freq / 1000000 << "MHz, ";
