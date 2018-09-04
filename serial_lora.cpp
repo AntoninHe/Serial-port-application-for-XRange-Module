@@ -6,11 +6,11 @@
  */
 
 #include <condition_variable> // std::condition_variable
+#include <exception>          // std::exception
 #include <iostream>           // sdt::cout, sdt::cin, sdt::endl
-#include <memory>             // unique_ptr
+#include <memory>             // std::unique_ptr
 #include <mutex>              // std::mutex, std::unique_lock
 #include <thread>             // std::thread
-#include <exception>
 
 extern "C" {
 #include <fcntl.h>
@@ -22,11 +22,9 @@ extern "C" {
 
 #include "serial_lora.hpp"
 
-const char MSG_YES = '!';
-const char MSG_NO = '?';
-const char MSG_END = '*';
-
-#define BASE64BUFFERSIZE 500
+constexpr auto MSG_YES = char{'!'};
+constexpr auto MSG_NO = char{'?'};
+constexpr auto MSG_END = char{'*'};
 
 /////////////////////////////////////////////////
 std::mutex mutex_serial_port_read;
@@ -46,13 +44,14 @@ using std::cin;
 using std::cout;
 using std::endl;
 
-const int SIZE_MAX_BUFER = 200;
+constexpr auto size_max_bufer = 200;
+
 SerialBuffer::SerialBuffer(int size_msg) {
     this->msg = std::unique_ptr<char[]>(new char[size_msg]);
 }
 
 SerialLora::SerialLora(const std::string port,
-                       const int size_data_in = SIZE_MAX_BUFER) {
+                       const int size_data_in = size_max_bufer) {
     this->size_max = size_data_in;
 
     this->tty_fd = open(port.c_str(), O_RDWR);
@@ -75,7 +74,7 @@ SerialLora::~SerialLora() {
 }
 
 void SerialLora::raw_mode(int fd, struct termios *old_term) {
-    struct termios term = {};
+    auto term = termios{};
 
     tcgetattr(fd, &term);
     tcgetattr(fd, old_term);
@@ -153,14 +152,14 @@ void SerialLora::write_serial_Lora(SerialBuffer &buff) {
 int SerialLora::write_msg(int fd) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
     auto olen = size_t{};
-    int n = 0;
-    int slen = my_buffer_W.size;
+    auto n = int{0};
+    auto slen = int{my_buffer_W.size};
     n = slen / 3;
     if (slen % 3 != 0) {
         n += 1;
     }
     n *= 4;
-    const int buffer_max_size = n + 1;
+    const auto buffer_max_size = n + 1;
     SerialBuffer buffer_write_2(buffer_max_size);
     mbedtls_base64_encode(
         reinterpret_cast<unsigned char *>(buffer_write_2.msg.get()),
