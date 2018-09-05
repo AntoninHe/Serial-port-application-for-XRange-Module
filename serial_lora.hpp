@@ -12,19 +12,12 @@
 #include <termios.h>
 #include <thread>
 
-class SerialBuffer {
-  public:
-    int size = 0;
-    std::unique_ptr<char[]> msg;
-    SerialBuffer(int size_msg);
-};
-
 class SerialLora {
   public:
-    SerialLora(const std::string port, const int size_data_in);
+    SerialLora(const std::string port);
     ~SerialLora();
-    void write_serial_Lora(SerialBuffer &buff);
-    SerialBuffer read_serial_Lora();
+    void write_serial_Lora(std::string &buff);
+    std::string &&read_serial_Lora();
 
   private:
     int tty_fd = -1;

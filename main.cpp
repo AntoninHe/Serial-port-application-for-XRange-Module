@@ -13,14 +13,12 @@ using std::string;
 
 void thread_Cpu_data(std::shared_ptr<SerialLora> my_serial_port) {
     cout << "thread cpu started" << endl;
-    const auto size_buffer = 200;
     while (true) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         auto cpuUsage = Get_cpu();
-        auto my_buff = SerialBuffer(size_buffer);
+        auto my_buff = string();
         for (auto &e : cpuUsage) {
-            my_buff.msg[my_buff.size] = e;
-            my_buff.size++;
+            my_buff += static_cast<char>(e);
         }
         my_serial_port->write_serial_Lora(my_buff);
     }
@@ -30,7 +28,7 @@ void thread_consummer(std::shared_ptr<SerialLora> my_serial_port) {
     cout << "thread consumer started" << endl;
     while (true) {
         auto my_buffer = my_serial_port->read_serial_Lora();
-        forwarder(my_buffer.msg.get(), my_buffer.size);
+        forwarder(my_buffer.data(), my_buffer.size());
     }
 }
 
@@ -47,7 +45,7 @@ int main(int argc, char *argv[]) {
 
     try {
         auto my_serial_port =
-            std::shared_ptr<SerialLora>(new SerialLora(my_port, 200));
+            std::shared_ptr<SerialLora>(new SerialLora(my_port));
         std::thread t1(thread_consummer, my_serial_port);
         std::thread t2(thread_Cpu_data, my_serial_port);
 

@@ -12,15 +12,21 @@
 #include <mutex>              // std::mutex, std::unique_lock
 #include <thread>             // std::thread
 
+#include <cppcodec/base64_rfc4648.hpp>
+
 extern "C" {
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
-
-#include "mbedtls/base64.h"
 }
 
 #include "serial_lora.hpp"
+
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+using base64 = cppcodec::base64_rfc4648;
 
 constexpr auto MSG_YES = char{'!'};
 constexpr auto MSG_NO = char{'?'};
@@ -29,30 +35,18 @@ constexpr auto MSG_END = char{'*'};
 /////////////////////////////////////////////////
 std::mutex mutex_serial_port_read;
 std::condition_variable cv_serial_port;
-auto my_buffer_R = SerialBuffer(0);
+auto my_buffer_R = string();
 auto done_serial_port = false;
 /////////////////////////////////////////////////
 
 /////////////////////////////////////////////////
 std::mutex mutex_serial_port_read_send;
 std::condition_variable cv_serial_port_send;
-auto my_buffer_W = SerialBuffer(0);
+auto my_buffer_W = string();
 /////////////////////////////////////////////////
 auto new_msg = false;
 
-using std::cin;
-using std::cout;
-using std::endl;
-
-constexpr auto size_max_bufer = 200;
-
-SerialBuffer::SerialBuffer(int size_msg) {
-    this->msg = std::unique_ptr<char[]>(new char[size_msg]);
-}
-
-SerialLora::SerialLora(const std::string port,
-                       const int size_data_in = size_max_bufer) {
-    this->size_max = size_data_in;
+SerialLora::SerialLora(const std::string port) {
 
     this->tty_fd = open(port.c_str(), O_RDWR);
 
@@ -91,7 +85,7 @@ void SerialLora::raw_mode(int fd, struct termios *old_term) {
     }
 }
 
-SerialBuffer SerialLora::read_serial_Lora() {
+string &&SerialLora::read_serial_Lora() {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read);
     cv_serial_port.wait(locker, []() { return done_serial_port; });
     done_serial_port = false;
@@ -99,8 +93,8 @@ SerialBuffer SerialLora::read_serial_Lora() {
 }
 
 int SerialLora::read_msg(int fd, int buffer_size) {
-    auto c = 0;
-    my_buffer_R = SerialBuffer(buffer_size);
+    auto c = char{0};
+    my_buffer_R = string();
     std::lock_guard<std::mutex> lk(mutex_serial_port_read);
     while (true) {
         while (read(fd, &c, 1) < 1)
@@ -108,16 +102,11 @@ int SerialLora::read_msg(int fd, int buffer_size) {
         if (c == MSG_END) {
             break; // avoid copy MSG_END cara
         }
-        my_buffer_R.msg[my_buffer_R.size] = c;
-        my_buffer_R.size++;
-        if (my_buffer_R.size >= buffer_size) {
-            cout << "Error read msg overflow" << endl;
-            break;
-        }
+        my_buffer_R += static_cast<char>(c);
     }
     done_serial_port = true;
     cv_serial_port.notify_one();
-    return my_buffer_R.size;
+    return my_buffer_R.size();
 }
 
 int SerialLora::say_Y_N(int fd, bool new_msg) {
@@ -142,7 +131,7 @@ int SerialLora::flush_with_space(int fd) {
     return -1;
 }
 
-void SerialLora::write_serial_Lora(SerialBuffer &buff) {
+void SerialLora::write_serial_Lora(string &buff) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
     my_buffer_W = std::move(buff);
     new_msg = true;
@@ -151,26 +140,11 @@ void SerialLora::write_serial_Lora(SerialBuffer &buff) {
 
 int SerialLora::write_msg(int fd) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
-    auto olen = size_t{};
-    auto n = int{0};
-    auto slen = int{my_buffer_W.size};
-    n = slen / 3;
-    if (slen % 3 != 0) {
-        n += 1;
-    }
-    n *= 4;
-    const auto buffer_max_size = n + 1;
-    SerialBuffer buffer_write_2(buffer_max_size);
-    mbedtls_base64_encode(
-        reinterpret_cast<unsigned char *>(buffer_write_2.msg.get()),
-        buffer_max_size, &olen,
-        reinterpret_cast<unsigned char *>(my_buffer_W.msg.get()),
-        my_buffer_W.size);
-    buffer_write_2.msg[olen++] = MSG_END;
-    buffer_write_2.size = olen;
 
-    if (write(fd, buffer_write_2.msg.get(), buffer_write_2.size) ==
-        (ssize_t)olen) {
+    my_buffer_W = base64::encode(my_buffer_W) + MSG_END;
+
+    if (write(fd, my_buffer_W.data(), my_buffer_W.size()) ==
+        static_cast<ssize_t>(my_buffer_W.size())) {
         new_msg = false;
         cv_serial_port_send.notify_one();
         return 0;

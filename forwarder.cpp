@@ -250,7 +250,7 @@ void sendstat() {
     sendudp(status_report, stat_index);
 }
 
-void receivepacket(char my_msg[], int receivedbytes) {
+void receivepacket(const char my_msg[], int receivedbytes) {
 
     long int SNR;
     // int rssicorr;
@@ -597,7 +597,7 @@ void parseCommandline(int argc, char *argv[]) {
     }
 }
 
-void forwarder(char my_msg[], int receivedbytes) {
+void forwarder(const char my_msg[], const int receivedbytes) {
 
     std::stringstream desc;
     desc << "Single channel, ";

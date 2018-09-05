@@ -14,6 +14,6 @@
 
 void parseCommandline(int argc, char *argv[]);
 
-void forwarder(char my_msg[], int receivedbytes);
+void forwarder(const char my_msg[], const int receivedbytes);
 
 #endif
