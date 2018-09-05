@@ -92,7 +92,7 @@ string &&SerialLora::read_serial_Lora() {
     return std::move(my_buffer_R);
 }
 
-int SerialLora::read_msg(int fd, int buffer_size) {
+int SerialLora::read_msg(int fd) {
     auto c = char{0};
     my_buffer_R = string();
     std::lock_guard<std::mutex> lk(mutex_serial_port_read);
@@ -163,7 +163,7 @@ void SerialLora::serial_exchange() {
                 usleep(10000);
                 say_Y_N(tty_fd, new_msg);
                 if (c == MSG_YES) {
-                    read_msg(tty_fd, size_max);
+                    read_msg(tty_fd);
                 }
                 if (new_msg) { // Write msg
                     if (write_msg(tty_fd) != 0) {
