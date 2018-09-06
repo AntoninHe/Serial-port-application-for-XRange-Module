@@ -104,6 +104,7 @@ int SerialLora::say_Y_N(int fd, bool new_msg) {
     }
     if (write(fd, &r, 1) != 1) {
         cout << "Error write" << endl;
+        throw;
         return -1;
     }
     return 0;
@@ -146,7 +147,7 @@ void SerialLora::serial_exchange() {
         c = 0;
         if (read(tty_fd, &c, 1) > 0) {
             if (c == MSG_YES || c == MSG_NO) {
-                usleep(10000);
+                usleep(20000);
                 say_Y_N(tty_fd, new_msg);
                 if (c == MSG_YES) {
                     read_msg(tty_fd);
