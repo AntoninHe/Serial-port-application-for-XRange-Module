@@ -14,7 +14,7 @@
 
 class SerialLora {
   public:
-    SerialLora(const std::string port);
+    SerialLora(const std::string &port);
     ~SerialLora();
     void write_serial_Lora(std::string &buff);
     std::string &&read_serial_Lora();

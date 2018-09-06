@@ -17,7 +17,7 @@ void thread_Cpu_data(std::shared_ptr<SerialLora> my_serial_port) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         auto cpuUsage = Get_cpu();
         auto my_buff = string();
-        for (auto &e : cpuUsage) {
+        for (const auto &e : cpuUsage) {
             my_buff += static_cast<char>(e);
         }
         my_serial_port->write_serial_Lora(my_buff);

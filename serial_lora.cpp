@@ -46,7 +46,7 @@ auto my_buffer_W = string();
 /////////////////////////////////////////////////
 auto new_msg = false;
 
-SerialLora::SerialLora(const std::string port) {
+SerialLora::SerialLora(const std::string& port) {
 
     this->tty_fd = open(port.c_str(), O_RDWR);
 
@@ -110,7 +110,7 @@ int SerialLora::read_msg(int fd) {
 }
 
 int SerialLora::say_Y_N(int fd, bool new_msg) {
-    auto r = ' ';
+    auto r = char{};
     if (new_msg) {
         r = MSG_YES;
     } else {
@@ -124,8 +124,8 @@ int SerialLora::say_Y_N(int fd, bool new_msg) {
 }
 
 int SerialLora::flush_with_space(int fd) {
-    auto c = MSG_END;
-    if (write(fd, &c, 1) > 0) {
+    // auto c = MSG_END;
+    if (write(fd, &MSG_END, 1) > 0) {
         return 0;
     }
     return -1;
@@ -153,7 +153,7 @@ int SerialLora::write_msg(int fd) {
 }
 
 void SerialLora::serial_exchange() {
-    auto c = 'D';
+    auto c = char{'D'};
     tcflush(tty_fd, TCIFLUSH);
     flush_with_space(tty_fd);
     while (true) {
