@@ -11,6 +11,8 @@
 #include <memory>
 #include <termios.h>
 #include <thread>
+#include <mutex>              // std::mutex, std::unique_lock
+#include <condition_variable> // std::condition_variable
 
 class SerialLora {
   public:
@@ -29,6 +31,23 @@ class SerialLora {
     int say_Y_N(int fd, bool new_msg);
     int flush_with_space(int fd);
     int write_msg(int fd);
+
+    /////////////////////////////////////////////////
+    std::mutex mutex_serial_port_read;
+    std::condition_variable cv_serial_port;
+    std::string my_buffer_R = std::string();
+    bool done_serial_port = false;
+    /////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////
+    std::mutex mutex_serial_port_read_send;
+    std::condition_variable cv_serial_port_send;
+    std::string my_buffer_W = std::string();
+    /////////////////////////////////////////////////
+
+    bool new_msg = false;
+
+
 };
 
 class openException: public std::exception {

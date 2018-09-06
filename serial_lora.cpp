@@ -32,21 +32,7 @@ constexpr auto MSG_YES = char{'!'};
 constexpr auto MSG_NO = char{'?'};
 constexpr auto MSG_END = char{'*'};
 
-/////////////////////////////////////////////////
-std::mutex mutex_serial_port_read;
-std::condition_variable cv_serial_port;
-auto my_buffer_R = string();
-auto done_serial_port = false;
-/////////////////////////////////////////////////
-
-/////////////////////////////////////////////////
-std::mutex mutex_serial_port_read_send;
-std::condition_variable cv_serial_port_send;
-auto my_buffer_W = string();
-/////////////////////////////////////////////////
-auto new_msg = false;
-
-SerialLora::SerialLora(const std::string& port) {
+SerialLora::SerialLora(const std::string &port) {
 
     this->tty_fd = open(port.c_str(), O_RDWR);
 
@@ -87,7 +73,7 @@ void SerialLora::raw_mode(int fd, struct termios *old_term) {
 
 string &&SerialLora::read_serial_Lora() {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read);
-    cv_serial_port.wait(locker, []() { return done_serial_port; });
+    cv_serial_port.wait(locker, [this]() { return done_serial_port; });
     done_serial_port = false;
     return std::move(my_buffer_R);
 }
@@ -135,7 +121,7 @@ void SerialLora::write_serial_Lora(string &buff) {
     std::unique_lock<std::mutex> locker(mutex_serial_port_read_send);
     my_buffer_W = std::move(buff);
     new_msg = true;
-    cv_serial_port_send.wait(locker, []() { return !new_msg; });
+    cv_serial_port_send.wait(locker, [this] { return !new_msg; });
 }
 
 int SerialLora::write_msg(int fd) {
