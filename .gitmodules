@@ -1,3 +1,6 @@
 [submodule "cppcodec"]
 	path = cppcodec
 	url = git@github.com:tplgy/cppcodec.git
+[submodule "third_party/cppcodec"]
+	path = third_party/cppcodec
+	url = git@github.com:tplgy/cppcodec.git
