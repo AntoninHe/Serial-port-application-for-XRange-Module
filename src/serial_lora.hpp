@@ -26,11 +26,11 @@ class SerialLora {
     struct termios old = {};
     std::thread my_thread;
     void serial_exchange();
-    void raw_mode(int fd, struct termios *old_term);
-    int read_msg(int fd);
-    int say_Y_N(int fd, bool new_msg);
-    int flush_with_space(int fd);
-    int write_msg(int fd);
+    void raw_mode(struct termios *old_term);
+    int read_msg();
+    int say_Y_N( bool new_msg);
+    int flush_with_space();
+    int write_msg();
 
     /////////////////////////////////////////////////
     std::mutex mutex_serial_port_read;
