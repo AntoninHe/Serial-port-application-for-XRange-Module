@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.11)
 project(libseriallora 
         VERSION 1.0.0 
         DESCRIPTION "Very nice project"

@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.11)
 project(appDemo 
         DESCRIPTION "Very nice project"
         LANGUAGES CXX)
